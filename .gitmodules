@@ -1,0 +1,3 @@
+[submodule "RecStudio"]
+	path = RecStudio
+	url = git@github.com:ustcml/RecStudio.git
