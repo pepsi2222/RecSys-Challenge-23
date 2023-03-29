@@ -21,6 +21,13 @@ Notice that there is no click but there is an install.
 - Correlation
     - see corr.ipynb
 
-## 
+## 计划
 
-
+- 66 val
+- 单任务
+  - FM, MLP
+- 多任务
+  - PLM 等
+- 主从任务
+- trick
+  - automl
