@@ -15,8 +15,7 @@ git pull
 To push submodules, just the same with normal modules in the vscode.
 
 # TODO
-- Normalize data
-- Concat embedding table
+- 用deepctr/fuxictr处理数据
 - Single task
   - FM, MLP
 - Two tasks
