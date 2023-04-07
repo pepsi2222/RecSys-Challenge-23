@@ -1,8 +1,11 @@
 It's an intro of the *.csv under the directory.
 
-sep is '\t' and header is 0 for all *.csv
+for all *.csv
+- sep='\t' 
+- header=0 
+- dir='/root/data/xingmei/Sharechat-RecSys-Challenge-23/data'
 
-# Concated Raw Data
+# Raw Data
 
 - train.csv
 - test.csv
@@ -41,3 +44,22 @@ the last two *.csv are for single task
 - install_sub_trn_val.csv
 
 Notice: the nums of entries for trn and val are 1016364, 29392, respectively.
+
+
+# Simplified Data
+
+all simplified_*.csv
+
+delete f7 (unique_num=1), f27, f28, f29 (pearson corr=1 with f26)
+
+## For task-specific fine tune
+- simplified_click_sub_trn_val.csv
+- simplified_install_sub_trn_val.csv
+
+Notice: trn/val split_ratio is [1016364, 29392]
+
+## For task-specific test
+- simplified_click_trn_val_tst.csv
+- simplified_install_trn_val_tst.csv
+
+Notice: trn/val/tst split_ratio is [3387880, 97972, 160973]
