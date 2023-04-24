@@ -1,0 +1,13 @@
+train:
+  weights: ~
+
+data:
+  fmeval: True
+  low_rating_thres: ~
+  binarized_rating_thres: ~
+  split_ratio: [1016364, 29392, 0]  # for fine tune
+  split_mode: entry
+
+eval:
+  val_metrics: [auc, logloss, accuracy, f1, precision, recall]
+  test_metrics: [auc, logloss, accuracy, f1, precision, recall]

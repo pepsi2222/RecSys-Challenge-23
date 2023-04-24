@@ -15,6 +15,10 @@
             float_field_preprocess: [f_76:StandardScaler(), f_77:MinMaxScaler(), f_78:KBinsDiscretizer(n_bins=5; strategy="quantile"; encode="ordinal")]
             ~~~
             Notice that when giving a list, `,` in `()` should be replaced by `;`, otherwise the yaml parser will split it by `,` 
+        - you can use `rest` to replace the rest ungiven floats like
+            ~~~yaml
+            float_field_preprocess: [rest:MinMaxScaler(), f_76:StandardScaler()]
+            ~~~
     - for finer-grained
 
 - dense embedding in ctr.Embeddings()

@@ -3,7 +3,7 @@ It's an intro of the *.csv under the directory.
 for all *.csv
 - sep='\t' 
 - header=0 
-- dir='/root/data/xingmei/Sharechat-RecSys-Challenge-23/data'
+- dir='/root/data01/xingmei/Sharechat-RecSys-Challenge-23/data'
 
 # Raw Data
 
@@ -52,14 +52,21 @@ all simplified_*.csv
 
 delete f7 (unique_num=1), f27, f28, f29 (pearson corr=1 with f26)
 
-## For task-specific fine tune
-- simplified_click_sub_trn_val.csv
-- simplified_install_sub_trn_val.csv
+## Fine tune
+
+- For task-specific fine tune
+  - simplified_click_sub_trn_val.csv
+  - simplified_install_sub_trn_val.csv
+- For multitask fine tune
+  - simplified_sub_trn_val.csv
 
 Notice: trn/val split_ratio is [1016364, 29392]
 
-## For task-specific test
-- simplified_click_trn_val_tst.csv
-- simplified_install_trn_val_tst.csv
+## Test
+- For task-specific test
+  - simplified_click_trn_val_tst.csv
+  - simplified_install_trn_val_tst.csv
+- For multitask test
+  - simplified_trn_val_test.csv
 
 Notice: trn/val/tst split_ratio is [3387880, 97972, 160973]

@@ -35,5 +35,4 @@ There is a single file in the test folder. The file has identical format as trai
 two columns (is_clicked, is_installed) are not present
 
 ## Submission Format:
-The format for the submission file should contain three tab separated columns representing RowId corresponding to the
-lines in the test data and the corresponding prediction for is_clicked, is_installed.
+The format for the submission file should contain three tab separated columns representing RowId corresponding to the lines in the test data and the corresponding prediction for is_clicked, is_installed.

@@ -1,0 +1,7 @@
+model:
+  channels: [3, 3]
+  heights: [6, 5]
+
+  mlp_layer: [256]
+  activation: relu
+  dropout: 0.5
