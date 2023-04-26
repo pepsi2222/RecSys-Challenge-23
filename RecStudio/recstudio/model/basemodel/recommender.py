@@ -233,7 +233,7 @@ class Recommender(torch.nn.Module, abc.ABC):
         outputs = self.predict_epoch(pred_loader)
         pred_df = self.predict_epoch_end(outputs)
         if save_path is None:
-            save_dir = os.path.join('.predictions', f'{self.__class__.__name__}')
+            save_dir = os.path.join('./predictions', f'{self.__class__.__name__}')
             if not os.path.exists(save_dir):
                 os.makedirs(save_dir)
             save_path = os.path.join(save_dir, time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()) + f'{str(self.frating)}.csv')

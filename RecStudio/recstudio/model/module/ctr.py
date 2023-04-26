@@ -978,11 +978,11 @@ class OperationAwareFMLayer(nn.Module):
         bs = inputs.size(0)
         field_wise_emb = inputs.view(bs, self.num_fields, self.num_fields, -1)      # B x F x F x D
         emb_copy = torch.masked_select(field_wise_emb, self.diag_mask)              # B x F x D; copy i-th of emb_i
-        emb_copy = emb_copy.flatten(1)
+        emb_copy = emb_copy.view(bs, -1)
         
         inner_prod = (field_wise_emb.transpose(1, 2) * field_wise_emb).sum(dim=-1)  # B x F x F; <j-th of emb_i, i-th of emb_j> 
         ffm_out = torch.masked_select(inner_prod, self.triu_mask)
-        ffm_out = ffm_out.flatten(1)
+        ffm_out = ffm_out.view(bs, -1)
         
         output = torch.cat([emb_copy, ffm_out], dim=1)
         return output

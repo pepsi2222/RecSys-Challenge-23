@@ -20,8 +20,9 @@ data:   # params related to dataset
     sampler: ~ # [uniform]
     shuffle: True
     split_mode: user_entry    # [user, entry, user_entry]
-    split_ratio: [0.8,0.1,0.1]  # list or int type, list type for split by ratio, int type for leave one out
-
+    # split_ratio: [0.8,0.1,0.1]  # list or int type, list type for split by ratio, int type for leave one out
+#     split_ratio: [1016364, 29392, 0]        # for fine tune
+#     split_ratio: [3387880, 97972, 160973]   # for test
 
 model:
     embed_dim: 64       # embedding dimension for embedding layers, usually for item and user embeddings
