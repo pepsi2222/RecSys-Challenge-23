@@ -4,7 +4,7 @@ import inspect
 import logging
 from typing import Dict, List, Optional, Tuple
 from collections import defaultdict
-from collections.abc import Iterable
+import pandas as pd
 
 import time
 # import nni
@@ -85,8 +85,8 @@ class Recommender(torch.nn.Module, abc.ABC):
         self._set_data_field(train_data) #TODO(@AngusHuang17): to be considered in a better way
         self.fields = train_data.use_field
         self.frating = train_data.frating
-        assert (not isinstance(self.frating, Iterable) and self.frating in self.fields) or \
-            (isinstance(self.frating, Iterable) and set(self.frating).issubset(self.fields)), 'rating field is required.'
+        assert (not isinstance(self.frating, list) and self.frating in self.fields) or \
+            (isinstance(self.frating, list) and set(self.frating).issubset(self.fields)), 'rating field is required.'
         if drop_unused_field:
             train_data.drop_feat(keep_fields=self.fields)
         self.item_feat = train_data.item_feat
@@ -223,8 +223,22 @@ class Recommender(torch.nn.Module, abc.ABC):
             self.logger.info(color_dict(output, self.run_mode == 'tune'))
         return output
 
-    def predict(self, batch, k, *args, **kwargs):
-        pass
+    def predict(self, pred_data, save_path=None, **kwargs):
+        pred_data.drop_feat(keep_fields=self.fields)
+        pred_loader = pred_data.eval_loader(batch_size=self.config['eval']['batch_size'])
+        self.load_checkpoint(os.path.join(self.config['eval']['save_path'], self.ckpt_path))
+        if 'config' in kwargs:
+            self.config.update(kwargs['config'])          
+        self.eval()
+        outputs = self.predict_epoch(pred_loader)
+        pred_df = self.predict_epoch_end(outputs)
+        if save_path is None:
+            save_dir = os.path.join('.predictions', f'{self.__class__.__name__}')
+            if not os.path.exists(save_dir):
+                os.makedirs(save_dir)
+            save_path = os.path.join(save_dir, time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()) + f'{str(self.frating)}.csv')
+        pred_df.to_csv(save_path, sep='\t', index=False)
+        self.logger.info(f'Predictions are saved in {save_path}.')
 
     @abc.abstractmethod
     def forward(self, batch):
@@ -272,7 +286,7 @@ class Recommender(torch.nn.Module, abc.ABC):
         output_list = [output_list] if not isinstance(output_list, list) else output_list
         for outputs in output_list:
             if isinstance(outputs, List):
-                if not isinstance(self.frating, Iterable):
+                if not isinstance(self.frating, list):
                     loss_metric = {'train_'+ k: torch.hstack([e[k] for e in outputs]).mean() for k in outputs[0]}
                 else:
                     loss_metric = {'train_'+ k: torch.hstack([e[k] for e in outputs]).mean() for k in outputs[0] if k not in self.frating}
@@ -331,6 +345,21 @@ class Recommender(torch.nn.Module, abc.ABC):
         self.log_dict(out, tensorboard=False)
         return out
 
+    def predict_epoch_end(self, outputs):
+        rowid = pd.read_csv('/root/data01/xingmei/Sharechat-RecSys-Challenge-23/data/tst_rowid.csv')['f_0'].to_list()
+        if not isinstance(self.frating, list):
+            pred_df = pd.DataFrame({
+                        'RowId': rowid, 
+                        self.frating: outputs
+                    })
+        else:
+            pred_df = pd.DataFrame({
+                        'RowId': rowid, 
+                        'is_clicked': outputs['is_clicked'], 
+                        'is_installed': outputs['is_installed']
+                    })
+        return pred_df
+
     def _test_epoch_end(self, outputs, metrics):
         if isinstance(outputs[0][0], List):
             metric, bs = zip(*outputs)
@@ -351,7 +380,7 @@ class Recommender(torch.nn.Module, abc.ABC):
 
     def log_dict(self, metrics: Dict, tensorboard: bool=True):
         if tensorboard:
-            if not (isinstance(self.frating, Iterable) and set(self.frating).issubset(metrics)):
+            if not (isinstance(self.frating, list) and set(self.frating).issubset(metrics)):
                 for k, v in metrics.items():
                     if 'train' in k:
                         self.tensorboard_logger.add_scalar(f"train/{k}", v, self.logged_metrics['epoch']+1)
@@ -558,7 +587,7 @@ class Recommender(torch.nn.Module, abc.ABC):
 
                 # model is saved in callback when the callback return True.
                 if nepoch % self.config['eval']['val_n_epoch'] == 0:
-                    if not isinstance(self.frating, Iterable):
+                    if not isinstance(self.frating, list):
                         stop_training = self.callback(self, nepoch, self.logged_metrics)
                     else:
                         main_task = self.config['eval'].get('main_task', self.frating[0])
@@ -643,7 +672,7 @@ class Recommender(torch.nn.Module, abc.ABC):
                                 v = v.detach()
                             elif isinstance(v, List):
                                 v = [_ for _ in v]
-                        if not (isinstance(self.frating, Iterable) and k in self.frating):
+                        if not (isinstance(self.frating, list) and k in self.frating):
                            loss_[f'{k}_{loader_idx}'] = v
                         else:
                             loss_[k][f'{loader_idx}'] = v
@@ -697,6 +726,34 @@ class Recommender(torch.nn.Module, abc.ABC):
             output_list.append(output)
 
         return output_list
+    
+    @torch.no_grad()
+    def predict_epoch(self, dataloader):
+        if hasattr(self, '_update_item_vector'):
+            self._update_item_vector()
+
+        if not isinstance(self.frating, list):
+            output_list = []
+        else:
+            output_list = defaultdict(list)
+
+        for batch in dataloader:
+            # data to device
+            batch = self._to_device(batch, self._parameter_device)
+
+            # model validation results
+            output = self.predict_step(batch)
+            if not isinstance(self.frating, list):
+                output_list += (output['score'] > self.config['eval']['binarized_prob_thres']).int().tolist()
+            else:
+                binarized_prob_thres = self.config['eval']['binarized_prob_thres']
+                if not isinstance(binarized_prob_thres, list):
+                    binarized_prob_thres = [binarized_prob_thres] * len(self.frating)
+                for i, r in enumerate(self.frating):
+                    output_list[r] += (output[r]['score'] > binarized_prob_thres[i]).int().tolist()
+
+        return output_list
+    
 
     @staticmethod
     def _set_device(gpus):

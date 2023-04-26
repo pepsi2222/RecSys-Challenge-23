@@ -70,3 +70,11 @@ Notice: trn/val split_ratio is [1016364, 29392]
   - simplified_trn_val_test.csv
 
 Notice: trn/val/tst split_ratio is [3387880, 97972, 160973]
+
+## Submission
+
+RowId\tis_clicked\tis_installed
+
+...\t...\t...
+
+...
