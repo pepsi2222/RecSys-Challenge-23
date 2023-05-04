@@ -346,7 +346,7 @@ class Recommender(torch.nn.Module, abc.ABC):
         return out
 
     def predict_epoch_end(self, outputs):
-        rowid = pd.read_csv('/root/data01/xingmei/Sharechat-RecSys-Challenge-23/data/tst_rowid.csv')['f_0'].to_list()
+        rowid = pd.read_csv('/root/autodl-tmp/xingmei/RecSysChallenge23/data/tst_rowid.csv')['f_0'].to_list()
         if not isinstance(self.frating, list):
             pred_df = pd.DataFrame({
                         'RowId': rowid, 

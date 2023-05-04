@@ -755,8 +755,8 @@ class TripletDataset(Dataset):
         if splits[0][-1] == data_sum:
             return splits, data_count.index if m > 1 else None
         else:
-            ValueError(f'Expecting the number of interactions \
-            should be equal to the sum of {num}')
+            raise ValueError('Expecting the number of interactions' \
+                            f'should be equal to the sum of {num}')
 
     def _split_by_leave_one_out(self, leave_one_num, data_count, rep=True):
         r"""Split dataset into train/valid/test by leave one out method.

@@ -11,16 +11,31 @@ then
     if [ "${1}" == "True" ];
     then
         sed -i "8s/# //" $file
-        sed -i "14s/# //" $file
         sed -i "22s/# //" $file
+        if [ "${4}" == "True" ];        # fine tune
+        then
+            sed -i "27s/# //" $file
+        else
+            sed -i "14s/# //" $file
+        fi
     else
         if [ "${2}" == "is_clicked" ];
         then
             sed -i "5s/# //" $file
-            sed -i "12s/# //" $file
+            if [ "${4}" == "True" ];        # fine tune
+            then 
+                sed -i "25s/# //" $file
+            else
+                sed -i "12s/# //" $file
+            fi
         else
             sed -i "6s/# //" $file
-            sed -i "13s/# //" $file
+            if [ "${4}" == "True" ];        # fine tune
+            then
+                sed -i "26s/# //" $file
+            else
+                sed -i "13s/# //" $file
+            fi
         fi
         sed -i "20s/# //" $file
     fi
@@ -28,16 +43,31 @@ else
     if [ "${1}" == "True" ];
     then
         sed -i "8s/^/# /" $file
-        sed -i "14s/^/# /" $file
         sed -i "22s/^/# /" $file
+        if [ "${4}" == "True" ];        # fine tune
+        then
+            sed -i "27s/^/# /" $file
+        else
+            sed -i "14s/^/# /" $file
+        fi
     else
         if [ "${2}" == "is_clicked" ];
         then
             sed -i "5s/^/# /" $file
-            sed -i "12s/^/# /" $file
+            if [ "${4}" == "True" ];        # fine tune
+            then
+                sed -i "25s/^/# /" $file
+            else
+                sed -i "12s/^/# /" $file
+            fi
         else
             sed -i "6s/^/# /" $file
-            sed -i "13s/^/# /" $file
+            if [ "${4}" == "True" ];        # fine tune
+            then
+                sed -i "26s/^/# /" $file
+            else
+                sed -i "13s/^/# /" $file
+            fi
         fi
         sed -i "20s/^/# /" $file
     fi

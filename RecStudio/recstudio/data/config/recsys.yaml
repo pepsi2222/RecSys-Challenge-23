@@ -1,4 +1,4 @@
-url: "/root/data01/xingmei/Sharechat-RecSys-Challenge-23/data"
+url: "/root/autodl-tmp/xingmei/RecSysChallenge23/data"
 user_id_field: ~
 item_id_field: ~
 # Single task
@@ -20,6 +20,11 @@ time_format: ~
 # inter_feat_field: [*t, f_2:token, f_3:token, f_4:token, f_5:token, f_6:token, f_8:token, f_9:token, f_10:token, f_11:token, f_12:token, f_13:token, f_14:token, f_15:token, f_16:token, f_17:token, f_18:token, f_19:token, f_20:token, f_21:token, f_22:token, f_23:token, f_24:token, f_25:token, f_26:token, f_30:token, f_31:token, f_32:token, f_33:token, f_34:token, f_35:token, f_36:token, f_37:token, f_38:token, f_39:token, f_40:token, f_41:token, f_42:token, f_43:float, f_44:token, f_45:token, f_46:token, f_47:token, f_48:token, f_49:token, f_50:token, f_51:token, f_52:token, f_53:token, f_54:token, f_55:token, f_56:token, f_57:token, f_58:float, f_59:float, f_60:token, f_61:token, f_62:token, f_63:token, f_64:float, f_65:float, f_66:float, f_67:float, f_68:float, f_69:float, f_70:float, f_71:token, f_72:token, f_73:token, f_74:token, f_75:token, f_76:token, f_77:token, f_78:token, f_79:token, *r]
 # Multitask
 # inter_feat_field: [*t, f_2:token, f_3:token, f_4:token, f_5:token, f_6:token, f_8:token, f_9:token, f_10:token, f_11:token, f_12:token, f_13:token, f_14:token, f_15:token, f_16:token, f_17:token, f_18:token, f_19:token, f_20:token, f_21:token, f_22:token, f_23:token, f_24:token, f_25:token, f_26:token, f_30:token, f_31:token, f_32:token, f_33:token, f_34:token, f_35:token, f_36:token, f_37:token, f_38:token, f_39:token, f_40:token, f_41:token, f_42:token, f_43:float, f_44:token, f_45:token, f_46:token, f_47:token, f_48:token, f_49:token, f_50:token, f_51:token, f_52:token, f_53:token, f_54:token, f_55:token, f_56:token, f_57:token, f_58:float, f_59:float, f_60:token, f_61:token, f_62:token, f_63:token, f_64:float, f_65:float, f_66:float, f_67:float, f_68:float, f_69:float, f_70:float, f_71:token, f_72:token, f_73:token, f_74:token, f_75:token, f_76:token, f_77:token, f_78:token, f_79:token, is_clicked:float, is_installed:float]
+
+# Fine tune
+# inter_feat_name: simplified_click_sub_trn_val.csv
+# inter_feat_name: simplified_install_sub_trn_val.csv
+# inter_feat_name: simplified_sub_trn_val.csv
 inter_feat_header: 0
 
 user_feat_name: ~
