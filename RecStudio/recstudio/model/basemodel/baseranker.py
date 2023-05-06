@@ -44,7 +44,8 @@ class BaseRanker(Recommender):
         if self.retriever is None:
             self.retriever = self._get_retriever(train_data)
         if self.retriever is None:
-            self.logger.warning('No retriever is used, topk metrics is not supported.')
+            pass
+            # self.logger.warning('No retriever is used, topk metrics is not supported.')
 
     def _set_data_field(self, data):
         # token_field = set([k for k, v in data.field2type.items() if v=='token'])

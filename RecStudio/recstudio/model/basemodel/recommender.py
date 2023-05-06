@@ -744,14 +744,10 @@ class Recommender(torch.nn.Module, abc.ABC):
             # model validation results
             output = self.predict_step(batch)
             if not isinstance(self.frating, list):
-                output_list += (output['score'] > self.config['eval']['binarized_prob_thres']).int().tolist()
+                output_list += torch.sigmoid(output['score']).float().tolist()
             else:
-                binarized_prob_thres = self.config['eval']['binarized_prob_thres']
-                if not isinstance(binarized_prob_thres, list):
-                    binarized_prob_thres = [binarized_prob_thres] * len(self.frating)
                 for i, r in enumerate(self.frating):
-                    output_list[r] += (output[r]['score'] > binarized_prob_thres[i]).int().tolist()
-
+                    output_list[r] += torch.sigmoid(output[r]['score']).float().tolist()
         return output_list
     
 
