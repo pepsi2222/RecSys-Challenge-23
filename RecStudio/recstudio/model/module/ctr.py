@@ -1502,7 +1502,7 @@ class ExtractionLayer(nn.Module):
                                     [in_dim] + expert_mlp_layer,
                                     expert_activation, 
                                     expert_dropout)
-                                for _ in range(specific_experts_per_task)
+                                for _ in range(num_shared_experts)
                             ])
         self.gates = nn.ModuleList([
                         MLPModule(
