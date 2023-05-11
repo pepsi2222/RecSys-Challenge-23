@@ -27,7 +27,7 @@ class PLE(BaseRanker):
         assert isinstance(self.frating, list), f'Expect rating_field to be a list, but got {self.frating}.'
         self.extraction_layers = nn.Sequential(*[
                                     ctr.ExtractionLayer(
-                                        self.embedding.num_features * self.embed_dim,
+                                        self.embedding.num_features * self.embed_dim if i == 0 else model_config['expert_mlp_layer'][-1],
                                         model_config['specific_experts_per_task'],
                                         len(self.frating),
                                         model_config['num_shared_experts'],
