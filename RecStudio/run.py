@@ -2,7 +2,7 @@ from recstudio.utils import *
 from recstudio import quickstart
 import os
 
-task = 'is_clicked' 
+# task = 'is_clicked' 
 task = 'is_installed'
 fine_tune = False
 
