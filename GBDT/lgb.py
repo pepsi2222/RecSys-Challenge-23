@@ -100,21 +100,21 @@ def color_dict_normal(dict_, keep=True,):
 parser = argparse.ArgumentParser()
 parser.add_argument('--gpu', type=str, default='1')
 parser.add_argument('--train', type=bool, default=True)
-parser.add_argument('--infer', type=bool, default=False)
-parser.add_argument('--fold', type=int, default=5)
+parser.add_argument('--infer', type=bool, default=True)
+parser.add_argument('--fold', type=int, default=None)
 parser.add_argument('--seed', type=int, default=2023)
 
 parser.add_argument('--md', type=int, default=-1)
 parser.add_argument('--nl', type=int, default=200)
-parser.add_argument('--mb', type=int, default=255)
-parser.add_argument('--l2', type=float, default=40)
-parser.add_argument('--l1', type=float, default=0.01)
+parser.add_argument('--mb', type=int, default=100)
+parser.add_argument('--mcs', type=int, default=20)
+parser.add_argument('--l2', type=float, default=0)
+parser.add_argument('--l1', type=float, default=0)
 parser.add_argument('--ff', type=float, default=1.0)
 parser.add_argument('--bf', type=float, default=1.0)
-parser.add_argument('--bfq', type=int, default=0)
-parser.add_argument('--mcs', type=int, default=20)
+parser.add_argument('--bfq', type=int, default=5)
 
-parser.add_argument('--lr', type=float, default=0.1)
+parser.add_argument('--lr', type=float, default=0.005)
 
 args = parser.parse_args() 
 
@@ -126,17 +126,16 @@ params = {
     'boosting': 'gbdt',
     'data_sample_strategy': 'bagging',
     'metric':['binary_logloss', 'auc'],
-    'early_stopping_round': 200,
     'seed': args.seed,
     'max_depth': args.md, 
     'num_leaves': args.nl,
     'max_bin': args.mb,
+    'min_child_samples': args.mcs,
     'lambda_l1': args.l1,
     'lambda_l2': args.l2,
     'feature_fraction': args.ff,
     'bagging_fraction': args.bf,
     'bagging_freq': args.bfq,
-    'min_child_samples': args.mcs,
     'learning_rate': args.lr,
     'device_type':'cpu',
     'verbose': 1,
@@ -169,9 +168,9 @@ if args.train:
     best_score = 100
     auc = 0
     trn_df = df[0:3387880+97972]
+    best_fold = -1
     if args.fold is not None:
         sum_score = 0
-        best_fold = -1
         kf = KFold(n_splits=args.fold)  # shuffle=True, random_state=args.seed
         for i, (trn_idx, tst_idx) in enumerate(kf.split(trn_df)):
             logger.info(f'Fold {i+1}: trn size {len(trn_idx)} tst size {len(tst_idx)}')
@@ -189,6 +188,7 @@ if args.train:
                         trn_d, 
                         valid_sets=[tst_d],
                         num_boost_round=10000,
+                        early_stopping_round=200,
                         feature_name=list(trn_X.columns), 
                         categorical_feature=['f_2', 'f_3', 'f_4', 'f_5', 'f_6', 'f_8', 'f_9', 'f_10', 'f_11', 'f_12', 'f_13', 'f_14', 'f_15', 'f_16', 'f_17', 'f_18', 'f_19', 'f_20', 'f_21', 'f_22', 'f_23', 'f_24', 'f_25', 'f_26', 'f_30', 'f_31', 'f_32', 'f_33', 'f_34', 'f_35', 'f_36', 'f_37', 'f_38', 'f_39', 'f_40', 'f_41', 'f_42', 'f_44', 'f_45', 'f_46', 'f_47', 'f_48', 'f_49', 'f_50', 'f_51', 'f_52', 'f_53', 'f_54', 'f_55', 'f_56', 'f_57', 'f_60', 'f_61', 'f_62', 'f_63', 'f_71', 'f_72', 'f_73', 'f_74', 'f_75', 'f_76', 'f_77', 'f_78', 'f_79'])
             
@@ -208,14 +208,15 @@ if args.train:
         model = lgb.train(
                     params, 
                     trn_d, 
+                    num_boost_round=10000,
                     feature_name=list(trn_X.columns), 
                     categorical_feature=['f_2', 'f_3', 'f_4', 'f_5', 'f_6', 'f_8', 'f_9', 'f_10', 'f_11', 'f_12', 'f_13', 'f_14', 'f_15', 'f_16', 'f_17', 'f_18', 'f_19', 'f_20', 'f_21', 'f_22', 'f_23', 'f_24', 'f_25', 'f_26', 'f_30', 'f_31', 'f_32', 'f_33', 'f_34', 'f_35', 'f_36', 'f_37', 'f_38', 'f_39', 'f_40', 'f_41', 'f_42', 'f_44', 'f_45', 'f_46', 'f_47', 'f_48', 'f_49', 'f_50', 'f_51', 'f_52', 'f_53', 'f_54', 'f_55', 'f_56', 'f_57', 'f_60', 'f_61', 'f_62', 'f_63', 'f_71', 'f_72', 'f_73', 'f_74', 'f_75', 'f_76', 'f_77', 'f_78', 'f_79'])
 
-        if model.best_score['valid_0']['binary_logloss'] < best_score:
-            model.model_to_string(f"./saved/LightGBM/{log_time}.json")
-            if model.best_score['valid_0']['binary_logloss'] < best_score:
-                best_score = model.best_score['valid_0']['binary_logloss']
-        logger.info(f'Best score {best_score} | Log time {log_time}')
+        # if model.best_score['valid_0']['binary_logloss'] < best_score:
+        #     model.model_to_string(f"./saved/LightGBM/{log_time}.json")
+        #     if model.best_score['valid_0']['binary_logloss'] < best_score:
+        #         best_score = model.best_score['valid_0']['binary_logloss']
+        # logger.info(f'Best score {best_score} | Log time {log_time}')
     
 if args.infer:
     if args.train:
@@ -233,8 +234,6 @@ if args.infer:
     tst_X = df.loc[3387880+97972:, field]
     if args.fold is not None:
         model = lgb.Booster(model_file=save_pth.format(fold))
-    else:
-        model = lgb.Booster(model_file=save_pth)
     preds = model.predict(tst_X)
     rowid = pd.read_csv('/root/autodl-tmp/xingmei/RecSysChallenge23/data/tst_rowid.csv')['f_0'].to_list()
     pred_df = pd.DataFrame({

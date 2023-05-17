@@ -348,12 +348,17 @@ class Recommender(torch.nn.Module, abc.ABC):
     def predict_epoch_end(self, outputs):
         rowid = pd.read_csv('/root/autodl-tmp/xingmei/RecSysChallenge23/data/tst_rowid.csv')['f_0'].to_list()
         if not isinstance(self.frating, list):
-            assert self.frating == 'is_installed', f'Expect rating:is_installed, but got {self.frating}'
-            pred_df = pd.DataFrame({
-                        'RowId': rowid, 
-                        'is_clicked': 0,
-                        self.frating: outputs
-                    })
+            if self.frating == 'is_installed':
+                pred_df = pd.DataFrame({
+                            'RowId': rowid, 
+                            'is_clicked': 0,
+                            'is_installed': outputs
+                        })
+            elif self.frating == 'is_clicked':
+                pred_df = pd.DataFrame({
+                            'RowId': rowid, 
+                            'is_clicked': outputs
+                        })
         else:
             pred_df = pd.DataFrame({
                         'RowId': rowid, 
