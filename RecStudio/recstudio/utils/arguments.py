@@ -71,7 +71,7 @@ def get_default_parser() -> ArgumentParser:
         argument_default=SUPPRESS,
         formatter_class=ArgumentDefaultsHelpFormatter)
     group = parser.add_argument_group('main')
-    group.add_argument('--model', '-m', type=str, default='HardShare', help='model name')
+    group.add_argument('--model', '-m', type=str, default='DCNv2', help='model name')
     group.add_argument('--dataset', '-d', type=str, default='recsys', help='dataset name')
     group.add_argument('--data_config_path', type=str, default=None, help='path of datasets config file')
     group.add_argument('--mode', choices=['tune', 'light', 'detail'],

@@ -6,6 +6,8 @@ import os
 task = 'is_installed'
 fine_tune = False
 
+ckpt_name = '2023-05-20-22-31-04.ckpt'
+
 if __name__ == '__main__':
     parser = get_default_parser()
     args, command_line_args = parser.parse_known_args()
@@ -19,5 +21,6 @@ if __name__ == '__main__':
     else:
         sh = 'RecStudio/yaml_adjust.sh'
     os.system(f"bash {sh} {model_class.__name__ in ['HardShare', 'MMoE', 'PLE', 'AITM']} {task} START {fine_tune}")
-    quickstart.run(args.model, args.dataset, model_config=model_conf, data_config_path=args.data_config_path)
+    # quickstart.run(args.model, args.dataset, model_config=model_conf, data_config_path=args.data_config_path)
+    quickstart.pred(args.model, args.dataset, ckpt_name, model_config=model_conf, data_config_path=args.data_config_path)
     os.system(f"bash {sh} {model_class.__name__ in ['HardShare', 'MMoE', 'PLE', 'AITM']} {task} END {fine_tune}")

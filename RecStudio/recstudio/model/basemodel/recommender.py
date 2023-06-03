@@ -223,7 +223,7 @@ class Recommender(torch.nn.Module, abc.ABC):
             self.logger.info(color_dict(output, self.run_mode == 'tune'))
         return output
 
-    def predict(self, pred_data, save_path=None, **kwargs):
+    def predict(self, pred_data, save_path=None, dataset='test', **kwargs):
         pred_data.drop_feat(keep_fields=self.fields)
         pred_loader = pred_data.eval_loader(batch_size=self.config['eval']['batch_size'])
         self.load_checkpoint(os.path.join(self.config['eval']['save_path'], self.ckpt_path))
@@ -231,14 +231,17 @@ class Recommender(torch.nn.Module, abc.ABC):
             self.config.update(kwargs['config'])          
         self.eval()
         outputs = self.predict_epoch(pred_loader)
-        pred_df = self.predict_epoch_end(outputs)
+        pred_df = self.predict_epoch_end(outputs, dataset)
         if save_path is None:
             save_dir = os.path.join('./predictions', f'{self.__class__.__name__}')
             if not os.path.exists(save_dir):
                 os.makedirs(save_dir)
-            save_path = os.path.join(save_dir, time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()) + f'{str(self.frating)}.csv')
-        pred_df.to_csv(save_path, sep='\t', index=False)
-        self.logger.info(f'Predictions are saved in {save_path}.')
+            if dataset == 'test':
+                save_path = os.path.join(save_dir, time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()) + f'{str(self.frating)}.csv')
+                pred_df.to_csv(save_path, sep='\t', index=False)
+                self.logger.info(f'Predictions are saved in {save_path}.')
+            else:
+                return pred_df
 
     @abc.abstractmethod
     def forward(self, batch):
@@ -345,26 +348,35 @@ class Recommender(torch.nn.Module, abc.ABC):
         self.log_dict(out, tensorboard=False)
         return out
 
-    def predict_epoch_end(self, outputs):
-        rowid = pd.read_csv('/root/autodl-tmp/xingmei/RecSysChallenge23/data/tst_rowid.csv')['f_0'].to_list()
-        if not isinstance(self.frating, list):
-            if self.frating == 'is_installed':
+    def predict_epoch_end(self, outputs, dataset='test'):
+        if dataset == 'test':
+            rowid = pd.read_csv('/root/autodl-tmp/xingmei/RecSysChallenge23/data/tst_rowid.csv')['f_0'].to_list()
+            if not isinstance(self.frating, list):
+                if self.frating == 'is_installed':
+                    pred_df = pd.DataFrame({
+                                'RowId': rowid, 
+                                'is_clicked': 0,
+                                'is_installed': outputs
+                            })
+                elif self.frating == 'is_clicked':
+                    pred_df = pd.DataFrame({
+                                'RowId': rowid, 
+                                'is_clicked': outputs
+                            })
+            else:
                 pred_df = pd.DataFrame({
                             'RowId': rowid, 
-                            'is_clicked': 0,
-                            'is_installed': outputs
-                        })
-            elif self.frating == 'is_clicked':
-                pred_df = pd.DataFrame({
-                            'RowId': rowid, 
-                            'is_clicked': outputs
+                            'is_clicked': outputs['is_clicked'], 
+                            'is_installed': outputs['is_installed']
                         })
         else:
-            pred_df = pd.DataFrame({
-                        'RowId': rowid, 
-                        'is_clicked': outputs['is_clicked'], 
-                        'is_installed': outputs['is_installed']
-                    })
+            if not isinstance(self.frating, list):
+                pred_df = pd.DataFrame({f'{self.frating}_prob': outputs})
+            else:
+                pred_df = pd.DataFrame({
+                            'is_clicked_prob': outputs['is_clicked'], 
+                            'is_installed_prob': outputs['is_installed']
+                        })
         return pred_df
 
     def _test_epoch_end(self, outputs, metrics):

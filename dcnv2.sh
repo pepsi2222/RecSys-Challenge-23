@@ -1,23 +1,33 @@
 file='/root/autodl-tmp/xingmei/RecSysChallenge23/RecStudio/recstudio/model/fm/config/dcnv2.yaml'
-for combination in 'parallel' 'stacked'
+for dropout in 0 0.2 0.3
 do
-    sed -i -r "2s/combination: [a-z]+/combination: $combination/" $file
-    for num_experts in 3 4 5
+    sed -i -r "10s/dropout: [0-9.]+/dropout: $dropout/" $file
+    for scheduler in 'onplateau' 'exponential'
     do
-        sed -i -r "4s/num_experts: [0-9]+/num_experts: $num_experts/" $file
-        for num_layers in 2 3 4
+        sed -i -r "14s/scheduler: [a-z]+/scheduler: $scheduler/" $file
+        for learning_rate in '1e-4' '1e-3'
         do
-            sed -i -r "5s/num_llayers: [0-9]+/num_layers: $num_layers/" $file
-            for embed_dim in 20 30 40
-            do
-                sed -i -r "6s/embed_dim: [0-9]+/embed_dim: $embed_dim/" $file
-                python RecStudio/run.py
-                wait
-            done
+            sed -i -r "15s/learning_rate: 1e-[0-9]/learning_rate: $learning_rate/" $file
+
+
+            sed -i -r "16s/weight_decay: [0-9](e-[0-9])?/weight_decay: 0/" $file
+            python RecStudio/run.py
+            sleep 1m
+
+            sed -i -r "16s/weight_decay: [0-9](e-[0-9])?/weight_decay: 3e-5/" $file
+            python RecStudio/run.py
+            sleep 1m
+
+            sed -i -r "16s/weight_decay: [0-9](e-[0-9])?/weight_decay: 1e-4/" $file
+            python RecStudio/run.py
+
+            wait
+            # for weight_decay in '0' '3e-5' '1e-4' 
+            # do
+            #     sed -i -r "16s/weight_decay: [0-9](e-[0-9])?/weight_decay: $weight_decay/" $file
+            #     python RecStudio/run.py
+            #     wait
+            # done
         done
     done
 done
-# for scheduer in 'onplateau' 'exponential'
-# do
-#     sed -i -r "14s/scheduler: [a-z]+/scheduler: $scheduler/" $file
-# done

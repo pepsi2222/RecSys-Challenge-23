@@ -40,7 +40,7 @@ train:
     early_stop_patience: 10
 
     epochs: 1000
-    gpu: 1
+    gpu: [1]
     grad_clip_norm: ~
     init_method: xavier_normal  # [xavier_normal, normal]
     item_batch_size: 1024  # batch size for items to get all item features or get full item scores.
@@ -67,7 +67,7 @@ train:
 
 
 eval:
-    batch_size: 128
+    batch_size: 4096
     cutoff: [5, 10, 20]
     val_metrics: [ndcg, recall]
     val_n_epoch: 1
