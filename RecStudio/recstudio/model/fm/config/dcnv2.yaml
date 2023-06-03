@@ -1,16 +1,16 @@
 model:
-  combination: stacked
+  combination: parallel
   low_rank: ~
-  num_experts: 3
-  num_layers: 4
-  embed_dim: 70
+  num_experts: 4
+  num_layers: 3
+  embed_dim: 10
   mlp_layer: [256,256,256]
   activation: relu
   cross_activation: tanh
-  dropout: 0
+  dropout: 0.5
   batch_norm: True
 
 train:
   scheduler: exponential
   learning_rate: 1e-3
-  weight_decay: 3e-5
+  weight_decay: 1e-5

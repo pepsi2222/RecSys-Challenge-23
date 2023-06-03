@@ -6,7 +6,8 @@ import os
 task = 'is_installed'
 fine_tune = False
 
-ckpt_name = '2023-05-20-22-31-04.ckpt'
+# ckpt_name = '2023-05-20-22-31-04.ckpt'
+ckpt_name = '2023-05-06-13-13-39.ckpt'
 
 if __name__ == '__main__':
     parser = get_default_parser()

@@ -226,9 +226,11 @@ class Recommender(torch.nn.Module, abc.ABC):
     def predict(self, pred_data, save_path=None, dataset='test', **kwargs):
         pred_data.drop_feat(keep_fields=self.fields)
         pred_loader = pred_data.eval_loader(batch_size=self.config['eval']['batch_size'])
+        self.config['eval']['save_path'] = '/root/autodl-tmp/yankai/Sharechat-RecSys-Challenge-23/saved/'
         self.load_checkpoint(os.path.join(self.config['eval']['save_path'], self.ckpt_path))
         if 'config' in kwargs:
-            self.config.update(kwargs['config'])          
+            self.config.update(kwargs['config'])
+        self.config['train']['batch_size'] = 100000          
         self.eval()
         outputs = self.predict_epoch(pred_loader)
         pred_df = self.predict_epoch_end(outputs, dataset)
@@ -236,12 +238,7 @@ class Recommender(torch.nn.Module, abc.ABC):
             save_dir = os.path.join('./predictions', f'{self.__class__.__name__}')
             if not os.path.exists(save_dir):
                 os.makedirs(save_dir)
-            if dataset == 'test':
-                save_path = os.path.join(save_dir, time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()) + f'{str(self.frating)}.csv')
-                pred_df.to_csv(save_path, sep='\t', index=False)
-                self.logger.info(f'Predictions are saved in {save_path}.')
-            else:
-                return pred_df
+            return pred_df
 
     @abc.abstractmethod
     def forward(self, batch):
