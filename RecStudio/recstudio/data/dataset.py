@@ -938,7 +938,7 @@ class TripletDataset(Dataset):
             fmeval: bool = False,
             neg_count: int = None,
             sampler: str = None,
-            shuffle: bool = True,
+            shuffle: bool = False,
             split_mode: str = 'user_entry',
             split_ratio: List = [0.8, 0.1, 0.1],
             **kwargs
