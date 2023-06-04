@@ -173,10 +173,10 @@ if args.train:
             tst_X, tst_y = trn_df.loc[tst_idx, field], trn_df.loc[tst_idx, 'is_installed']
             trn_d = xgb.DMatrix(trn_X, trn_y, enable_categorical=True, 
                                 feature_names=list(trn_X.columns), 
-                                feature_types=['q']+['c']*37+['q']+['c']*14+['q']*2+['c']*4+['q']*7+['c']*9)
+                                feature_types=['q']+['c']*37+['q']+['c']*14+['q']*2+['c']*4+['q']*7+['c']*9+['q']*...)
             tst_d = xgb.DMatrix(tst_X, tst_y, enable_categorical=True,
                                 feature_names=list(trn_X.columns), 
-                                feature_types=['q']+['c']*37+['q']+['c']*14+['q']*2+['c']*4+['q']*7+['c']*9)
+                                feature_types=['q']+['c']*37+['q']+['c']*14+['q']*2+['c']*4+['q']*7+['c']*9['q']*...)
             model = xgb.train(
                         params, 
                         trn_d, 
@@ -219,7 +219,7 @@ if args.infer:
     if args.train:
         save_time = log_time
     else:
-        save_time = '2023-05-12-20-46-12'
+        save_time = ''
     if args.fold is not None:
         save_pth = "./saved/XGBoost/"+save_time+"_fold{}.json"
     else:
@@ -241,7 +241,7 @@ if args.infer:
         if args.fold is not None and args.train:
             fold = best_fold
         elif args.fold is not None:
-            fold = '5'
+            fold = ''
         model = xgb.Booster(params)
         tst_X = tst_df[field]
         tst_d = xgb.DMatrix(tst_X, enable_categorical=True,

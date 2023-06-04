@@ -134,12 +134,12 @@ def pred(model: str, dataset: str, ckpt_name: str, model_config: Dict=None, data
     # pred_df.to_csv(save_path, sep='\t', index=False)
     
     model.ckpt_path = f'{model.__class__.__name__}/{dataset}/{ckpt_name}'
+    save_dir = os.path.join('./predictions', f'{model.__class__.__name__}')
     test_pred_df = model.predict(datasets[-1], dataset='test')
     save_path = os.path.join(save_dir, ckpt_name.replace('.ckpt', '') + f'{str(model.frating)}.csv')
     test_pred_df.to_csv(save_path, sep='\t', index=False)
     print(f'Predictions saved in {save_path}')
     try:
-        save_dir = os.path.join('./predictions', f'{model.__class__.__name__}')
         save_path = os.path.join(save_dir, ckpt_name.replace('.ckpt', '') + f'train_{str(model.frating)}.csv')
         train_pred_df = model.predict(datasets[-1], dataset='train')
         train_pred_df.to_csv(save_path, sep='\t', index=False)
