@@ -4,7 +4,7 @@ from recstudio.utils import *
 import logging
 from recstudio import LOG_DIR
 
-def run(model: str, dataset: str, model_config: Dict=None, data_config: Dict=None, model_config_path: str=None, data_config_path: str=None, verbose=True, **kwargs):
+def run(model: str, dataset: str, fine_tune: bool, model_config: Dict=None, data_config: Dict=None, model_config_path: str=None, data_config_path: str=None, verbose=True, **kwargs):
     model_class, model_conf = get_model(model)
 
     if model_config_path is not None:
@@ -22,7 +22,10 @@ def run(model: str, dataset: str, model_config: Dict=None, data_config: Dict=Non
     if kwargs is not None:
         model_conf = deep_update(model_conf, kwargs)
 
-    log_path = time.strftime(f"{model}/{dataset}/%Y-%m-%d-%H-%M-%S.log", time.localtime())
+    if fine_tune:
+        log_path = time.strftime(f"{model}/finetune/%Y-%m-%d-%H-%M-%S.log", time.localtime())
+    else:
+        log_path = time.strftime(f"{model}/{dataset}/%Y-%m-%d-%H-%M-%S.log", time.localtime())
     logger = get_logger(log_path)
     torch.set_num_threads(model_conf['train']['num_threads'])
 
@@ -57,16 +60,20 @@ def run(model: str, dataset: str, model_config: Dict=None, data_config: Dict=Non
     logger.info(f"\n{set_color('Model Config', 'green')}: \n\n" + color_dict_normal(model_conf, False))
     model.fit(*datasets[:2], run_mode='light')
     if len(datasets[-1].data_index) > 0:
-        model.predict(datasets[-1], dataset='test')
-        try:
-            save_dir = os.path.join('./predictions', f'{model.__class__.__name__}')
-            save_path = os.path.join(save_dir, time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()) + f'{str(model.frating)}.csv')
-            train_pred_df = model.predict(datasets[-1], dataset='train')
-            train_pred_df.to_csv(save_path, sep='\t', index=False)
-            val_pred_df = model.predict(datasets[-1], dataset='val')
-            val_pred_df.to_csv(save_path, sep='\t', index=False, mode='a', header=0)
-        except Exception as e:
-            print(e)
+        save_dir = os.path.join('./predictions', f'{model.__class__.__name__}')
+        save_path = os.path.join(save_dir, time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()) + f'{str(model.frating)}.csv')
+        
+        train_pred_df = model.predict(datasets[0], dataset='train')
+        train_pred_df.to_csv(save_path, sep='\t', index=False)
+        
+        val_pred_df = model.predict(datasets[1], dataset='val')
+        val_pred_df.to_csv(save_path, sep='\t', index=False, mode='a', header=0)
+        
+        tst_pred_df = model.predict(datasets[-1], dataset='val')
+        tst_pred_df.to_csv(save_path, sep='\t', index=False, mode='a', header=0)
+        
+        logger.info(f'Predictions saved in {save_path}')
+        
 
 def pred(model: str, dataset: str, ckpt_name: str, model_config: Dict=None, data_config: Dict=None, model_config_path: str=None, data_config_path: str=None, verbose=True, **kwargs):
     model_class, model_conf = get_model(model)
@@ -145,7 +152,8 @@ def pred(model: str, dataset: str, ckpt_name: str, model_config: Dict=None, data
     
     test_pred_df = model.predict(datasets[-1], dataset='test')
     test_pred_df.to_csv(save_path, sep='\t', index=False, mode='a', header=0)
+    test_pred_df.to_csv(save_path.replace('.csv', '_tst.csv'), sep='\t', index=False)
     
-    print(f'Predictions saved in {save_path}')
+    logger.info(f'Predictions saved in {save_path}')
 
     
