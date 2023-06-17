@@ -98,11 +98,13 @@ def color_dict_normal(dict_, keep=True,):
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--gpu', type=str, default='1')
-parser.add_argument('--train', type=bool, default=False)
-parser.add_argument('--infer', type=bool, default=True)
+parser.add_argument('--probs', type=str, default='install', choices=['install', 'all'])
 parser.add_argument('--fold', type=int, default=5)
 parser.add_argument('--seed', type=int, default=2023)
+
+parser.add_argument('--gpu', type=str, default='4')
+parser.add_argument('--train', type=bool, default=True)
+parser.add_argument('--infer', type=bool, default=False)
 
 parser.add_argument('--md', type=int, default=9)
 parser.add_argument('--mcw', type=int, default=1)
@@ -144,9 +146,9 @@ if args.train:
     logger.info(f"\n{set_color('Model Config', 'green')}: \n\n" + color_dict_normal(params, False))
     logger.info('Loading csv')
     
-cache_path = '/root/autodl-tmp/xingmei/RecSysChallenge23/data/preprocessed_trn_val_tst.cache'
+cache_path = f'/root/autodl-tmp/xingmei/RecSys23/data/install_probs_trn_val_tst.cache'
 if not os.path.exists(cache_path):
-    df = pd.read_csv('/root/autodl-tmp/xingmei/RecSysChallenge23/data/preprocessed_trn_val_tst.csv', sep='\t')
+    df = pd.read_csv(f'/root/autodl-tmp/xingmei/RecSys23/data/install_probs_trn_val_tst.csv', sep='\t')
     with open(cache_path, 'wb') as f:
         pickle.dump(df, f)
         f.close()
@@ -155,9 +157,26 @@ else:
         df = pickle.load(f)
         f.close()
 
-field = list(df.columns)
-field.pop(-1)
-field.pop(-1)
+if args.probs == 'all':
+    cache_path_ = f'/root/autodl-tmp/xingmei/RecSys23/data/click_probs_trn_val_tst.cache'
+    if not os.path.exists(cache_path_):
+        df_ = pd.read_csv(f'/root/autodl-tmp/xingmei/RecSys23/data/click_probs_trn_val_tst.csv', sep='\t')
+        with open(cache_path_, 'wb') as f:
+            pickle.dump(df, f)
+            f.close()
+    else:
+        with open(cache_path_, 'rb') as f:
+            df_ = pickle.load(f)
+            f.close()
+
+
+if args.probs == 'all':
+    st = time.time()
+    df = pd.concat([df, df_], axis=1)
+    print(f'{time.time() - st} for concat')
+    
+probs = list(df.columns)
+probs.remove('is_installed')
 
 if args.train:
     best_score = 100
@@ -166,17 +185,17 @@ if args.train:
     if args.fold is not None:
         sum_score = 0
         best_fold = -1
-        kf = KFold(n_splits=args.fold)  # shuffle=True, random_state=args.seed
+        kf = KFold(n_splits=args.fold, shuffle=True, random_state=args.seed)
         for i, (trn_idx, tst_idx) in enumerate(kf.split(trn_df)):
             logger.info(f'Fold {i+1}: trn size {len(trn_idx)} tst size {len(tst_idx)}')
-            trn_X, trn_y = trn_df.loc[trn_idx, field], trn_df.loc[trn_idx, 'is_installed']
-            tst_X, tst_y = trn_df.loc[tst_idx, field], trn_df.loc[tst_idx, 'is_installed']
+            trn_X, trn_y = trn_df.loc[trn_idx, probs], trn_df.loc[trn_idx, 'is_installed']
+            tst_X, tst_y = trn_df.loc[tst_idx, probs], trn_df.loc[tst_idx, 'is_installed']
             trn_d = xgb.DMatrix(trn_X, trn_y, enable_categorical=True, 
                                 feature_names=list(trn_X.columns), 
-                                feature_types=['q']+['c']*37+['q']+['c']*14+['q']*2+['c']*4+['q']*7+['c']*9+['q']*...)
+                                feature_types=['q']*len(probs))
             tst_d = xgb.DMatrix(tst_X, tst_y, enable_categorical=True,
                                 feature_names=list(trn_X.columns), 
-                                feature_types=['q']+['c']*37+['q']+['c']*14+['q']*2+['c']*4+['q']*7+['c']*9['q']*...)
+                                feature_types=['q']*len(probs))
             model = xgb.train(
                         params, 
                         trn_d, 
@@ -189,18 +208,14 @@ if args.train:
             logger.info(f'Best score: {model.best_score} at iteration {model.best_iteration}')
             sum_score += model.best_score
             if model.best_score < best_score:
-                model.save_model(f"./saved/XGBoost/{log_time}_fold{i+1}.json")
                 if model.best_score < best_score:
                     best_score = model.best_score
-                    best_fold = i + 1
-                    auc = metrics.roc_auc_score(tst_y, model.predict(tst_d))
-        logger.info(f'Best score {best_score} | AUC {auc} | Log time {log_time} | Fold {best_fold}')
-        logger.info(f'Avg score {sum_score / args.fold}')
+        logger.info(f'Avg score {sum_score / args.fold} | Log time {log_time}')
     else:
-        trn_X, trn_y = trn_df[field], trn_df['is_installed']
+        trn_X, trn_y = trn_df[probs], trn_df['is_installed']
         trn_d = xgb.DMatrix(trn_X, trn_y, enable_categorical=True,
                             feature_names=list(trn_X.columns), 
-                            feature_types=['q']+['c']*37+['q']+['c']*14+['q']*2+['c']*4+['q']*7+['c']*9)
+                            feature_types=['q']*len(probs))
         model = xgb.train(
                     params, 
                     trn_d, 
@@ -220,38 +235,17 @@ if args.infer:
         save_time = log_time
     else:
         save_time = ''
-    if args.fold is not None:
-        save_pth = "./saved/XGBoost/"+save_time+"_fold{}.json"
-    else:
-        save_pth = "./saved/XGBoost/"+save_time+".json"
         
     tst_df = df[3387880+97972:]
-    if args.fold is not None:
-        preds = np.zeros(len(tst_df))
-        for i in range(0, args.fold):
-            model = xgb.Booster(params)
-            tst_X = tst_df[field]
-            tst_d = xgb.DMatrix(tst_X, enable_categorical=True,
-                                feature_names=list(trn_X.columns), 
-                                feature_types=['q']+['c']*37+['q']+['c']*14+['q']*2+['c']*4+['q']*7+['c']*9)
-            model.load_model(save_pth.format(i+1))
-            preds += model.predict(tst_d)
-        preds /= args.fold
-    else:
-        if args.fold is not None and args.train:
-            fold = best_fold
-        elif args.fold is not None:
-            fold = ''
-        model = xgb.Booster(params)
-        tst_X = tst_df[field]
-        tst_d = xgb.DMatrix(tst_X, enable_categorical=True,
-                            feature_names=list(trn_X.columns), 
-                            feature_types=['q']+['c']*37+['q']+['c']*14+['q']*2+['c']*4+['q']*7+['c']*9)
-        if args.fold is not None:
-            model.load_model(save_pth.format(fold))
-        else:
-            model.load_model(save_pth)
-        preds = model.predict(tst_d)
+    model = xgb.Booster(params)
+    tst_X = tst_df[probs]
+    tst_d = xgb.DMatrix(tst_X, enable_categorical=True,
+                        feature_names=list(trn_X.columns), 
+                        feature_types=['q']*len(probs))
+    if not args.train:
+        save_pth = "./saved/XGBoost/"+save_time+".json"
+        model.load_model(save_pth)
+    preds = model.predict(tst_d)
     rowid = pd.read_csv('/root/autodl-tmp/xingmei/RecSysChallenge23/data/tst_rowid.csv')['f_0'].to_list()
     pred_df = pd.DataFrame({
                         'RowId': rowid, 

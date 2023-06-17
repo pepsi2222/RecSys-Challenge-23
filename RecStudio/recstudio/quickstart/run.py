@@ -150,9 +150,9 @@ def pred(model: str, dataset: str, ckpt_name: str, model_config: Dict=None, data
     val_pred_df = model.predict(datasets[1], dataset='val')
     val_pred_df.to_csv(save_path, sep='\t', index=False, mode='a', header=0)
     
-    test_pred_df = model.predict(datasets[-1], dataset='test')
+    test_pred_df = model.predict(datasets[-1], dataset='val')
     test_pred_df.to_csv(save_path, sep='\t', index=False, mode='a', header=0)
-    test_pred_df.to_csv(save_path.replace('.csv', '_tst.csv'), sep='\t', index=False)
+    # test_pred_df.to_csv(save_path.replace('.csv', '_tst.csv'), sep='\t', index=False)
     
     logger.info(f'Predictions saved in {save_path}')
 

@@ -154,3 +154,5 @@ catboost_info/
 *.cache
 predictions/
 predictions0/
+predictions1401/
+predictionsA100/
