@@ -18,7 +18,7 @@ data:   # params related to dataset
     # the sampler for dataset, only uniform sampler is supported now.
     neg_count: 0
     sampler: ~ # [uniform]
-    shuffle: True
+    shuffle: False
     split_mode: user_entry    # [user, entry, user_entry]
     # split_ratio: [0.8,0.1,0.1]  # list or int type, list type for split by ratio, int type for leave one out
 #     split_ratio: [1016364, 29392, 0]        ###for fine tune

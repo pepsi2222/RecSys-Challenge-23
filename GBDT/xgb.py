@@ -9,8 +9,6 @@ import logging
 import re
 from collections import OrderedDict
 import pickle
-import numpy as np
-from sklearn import metrics
 
 
 class RemoveColorFilter(logging.Filter):
@@ -102,17 +100,17 @@ parser.add_argument('--probs', type=str, default='install', choices=['install', 
 parser.add_argument('--fold', type=int, default=5)
 parser.add_argument('--seed', type=int, default=2023)
 
-parser.add_argument('--gpu', type=str, default='4')
+parser.add_argument('--gpu', type=str, default='1')
 parser.add_argument('--train', type=bool, default=True)
 parser.add_argument('--infer', type=bool, default=False)
 
-parser.add_argument('--md', type=int, default=9)
+parser.add_argument('--md', type=int, default=5)
 parser.add_argument('--mcw', type=int, default=1)
 parser.add_argument('--gamma', type=float, default=0.)
 parser.add_argument('--csb', type=float, default=0.8)
 parser.add_argument('--ss', type=float, default=0.95)
 parser.add_argument('--rl', type=float, default=40)
-parser.add_argument('--ra', type=float, default=0.01)
+parser.add_argument('--ra', type=float, default=10)
 parser.add_argument('--spw', type=float, default=1)
 parser.add_argument('--lr', type=float, default=0.1)
 
@@ -179,12 +177,9 @@ probs = list(df.columns)
 probs.remove('is_installed')
 
 if args.train:
-    best_score = 100
-    auc = 0
     trn_df = df[0:3387880+97972]
     if args.fold is not None:
         sum_score = 0
-        best_fold = -1
         kf = KFold(n_splits=args.fold, shuffle=True, random_state=args.seed)
         for i, (trn_idx, tst_idx) in enumerate(kf.split(trn_df)):
             logger.info(f'Fold {i+1}: trn size {len(trn_idx)} tst size {len(tst_idx)}')
@@ -207,9 +202,6 @@ if args.train:
             
             logger.info(f'Best score: {model.best_score} at iteration {model.best_iteration}')
             sum_score += model.best_score
-            if model.best_score < best_score:
-                if model.best_score < best_score:
-                    best_score = model.best_score
         logger.info(f'Avg score {sum_score / args.fold} | Log time {log_time}')
     else:
         trn_X, trn_y = trn_df[probs], trn_df['is_installed']
@@ -225,26 +217,21 @@ if args.train:
                     verbose_eval=100
                 )
         logger.info(f'Best score: {model.best_score} at iteration {model.best_iteration}')
-        if model.best_score < best_score:
-            model.save_model(f"./saved/XGBoost/{log_time}.json")
-            best_score = model.best_score
-        logger.info(f'Best score {best_score} | Log time {log_time}')
+        model.save_model(f"./saved/XGBoost/{log_time}.json")
+        logger.info(f'Best score {model.best_score} | Log time {log_time}')
     
 if args.infer:
     if args.train:
         save_time = log_time
     else:
         save_time = ''
-        
+        model.load_model("./saved/XGBoost/"+save_time+".json")
     tst_df = df[3387880+97972:]
     model = xgb.Booster(params)
     tst_X = tst_df[probs]
     tst_d = xgb.DMatrix(tst_X, enable_categorical=True,
                         feature_names=list(trn_X.columns), 
                         feature_types=['q']*len(probs))
-    if not args.train:
-        save_pth = "./saved/XGBoost/"+save_time+".json"
-        model.load_model(save_pth)
     preds = model.predict(tst_d)
     rowid = pd.read_csv('/root/autodl-tmp/xingmei/RecSysChallenge23/data/tst_rowid.csv')['f_0'].to_list()
     pred_df = pd.DataFrame({
