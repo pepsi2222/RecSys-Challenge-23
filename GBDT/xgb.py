@@ -96,15 +96,15 @@ def color_dict_normal(dict_, keep=True,):
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--probs', type=str, default='install', choices=['install', 'all'])
+parser.add_argument('--probs', type=str, default='install', choices=['install', 'all', 'none'])
 parser.add_argument('--seed', type=int, default=2023)
 
 parser.add_argument('--gpu', type=str, default='2')
 parser.add_argument('--train', type=bool, default=True)
-parser.add_argument('--fold', type=int, default=5)
-parser.add_argument('--infer', type=bool, default=False)
+parser.add_argument('--fold', type=int, default=None)
+parser.add_argument('--infer', type=bool, default=True)
 
-parser.add_argument('--md', type=int, default=5)
+parser.add_argument('--md', type=int, default=3)
 parser.add_argument('--mcw', type=int, default=1)
 parser.add_argument('--gamma', type=float, default=0.)
 parser.add_argument('--csb', type=float, default=0.8)
@@ -144,16 +144,17 @@ if args.train:
     logger.info(f"\n{set_color('Model Config', 'green')}: \n\n" + color_dict_normal(params, False))
     logger.info('Loading csv')
     
-cache_path = f'/root/autodl-tmp/xingmei/RecSys23/data/install_probs_trn_val_tst.cache'
-if not os.path.exists(cache_path):
-    df = pd.read_csv(f'/root/autodl-tmp/xingmei/RecSys23/data/install_probs_trn_val_tst.csv', sep='\t')
-    with open(cache_path, 'wb') as f:
-        pickle.dump(df, f)
-        f.close()
-else:
-    with open(cache_path, 'rb') as f:
-        df = pickle.load(f)
-        f.close()
+if args.probs == 'all' or args.probs == 'install':
+    cache_path = f'/root/autodl-tmp/xingmei/RecSys23/data/install_probs_trn_val_tst.cache'
+    if not os.path.exists(cache_path):
+        df = pd.read_csv(f'/root/autodl-tmp/xingmei/RecSys23/data/install_probs_trn_val_tst.csv', sep='\t')
+        with open(cache_path, 'wb') as f:
+            pickle.dump(df, f)
+            f.close()
+    else:
+        with open(cache_path, 'rb') as f:
+            df = pickle.load(f)
+            f.close()
 
 if args.probs == 'all':
     cache_path_ = f'/root/autodl-tmp/xingmei/RecSys23/data/click_probs_trn_val_tst.cache'
@@ -166,24 +167,37 @@ if args.probs == 'all':
         with open(cache_path_, 'rb') as f:
             df_ = pickle.load(f)
             f.close()
+            
+if args.probs == 'none':
+    cache_path_ = f'/root/autodl-tmp/xingmei/RecSys23/data/preprocessed_trn_val_tst.cache'
+    if not os.path.exists(cache_path_):
+        df_ = pd.read_csv(f'/root/autodl-tmp/xingmei/RecSys23/data/preprocessed_trn_val_tst.csv', sep='\t')
+        with open(cache_path_, 'wb') as f:
+            pickle.dump(df, f)
+            f.close()
+    else:
+        with open(cache_path_, 'rb') as f:
+            df_ = pickle.load(f)
+            f.close()
 
 
 if args.probs == 'all':
     df = pd.concat([df, df_], axis=1)
     
-probs = list(df.columns)
-probs.remove('is_installed')
-for i in [
-            'p_install_LorentzFM', 
-            'p_install_DeepFM', 
-            'p_install_EDCN', 
-            'p_install_FM', 
-            'p_install_LR', 
-            'p_install_PNN', 
-            'p_install_xDeepFM',
-            'p_install_DeepCrossing'
-        ]:
-    probs.remove(i)
+feats = list(df.columns)
+feats.remove('is_installed')
+if args.probs == 'all' or args.probs == 'install':
+    for i in [
+                'p_install_LorentzFM', 
+                'p_install_DeepFM', 
+                'p_install_EDCN', 
+                'p_install_FM', 
+                'p_install_LR', 
+                'p_install_PNN', 
+                'p_install_xDeepFM',
+                'p_install_DeepCrossing'
+            ]:
+        feats.remove(i)
 
 if args.train:
     trn_df = df[0:3387880+97972]
@@ -194,14 +208,14 @@ if args.train:
         kf = KFold(n_splits=args.fold, shuffle=True, random_state=args.seed)
         for i, (trn_idx, tst_idx) in enumerate(kf.split(trn_df)):
             logger.info(f'Fold {i+1}: trn size {len(trn_idx)} tst size {len(tst_idx)}')
-            trn_X, trn_y = trn_df.loc[trn_idx, probs], trn_df.loc[trn_idx, 'is_installed']
-            tst_X, tst_y = trn_df.loc[tst_idx, probs], trn_df.loc[tst_idx, 'is_installed']
+            trn_X, trn_y = trn_df.loc[trn_idx, feats], trn_df.loc[trn_idx, 'is_installed']
+            tst_X, tst_y = trn_df.loc[tst_idx, feats], trn_df.loc[tst_idx, 'is_installed']
             trn_d = xgb.DMatrix(trn_X, trn_y, enable_categorical=True, 
                                 feature_names=list(trn_X.columns), 
-                                feature_types=['q']*len(probs))
+                                feature_types=['q']*len(feats))
             tst_d = xgb.DMatrix(tst_X, tst_y, enable_categorical=True,
                                 feature_names=list(trn_X.columns), 
-                                feature_types=['q']*len(probs))
+                                feature_types=['q']*len(feats))
             model = xgb.train(
                         params, 
                         trn_d, 
@@ -215,10 +229,10 @@ if args.train:
             sum_score += model.best_score
         logger.info(f'Avg score {sum_score / args.fold} | Log time {log_time}')
     else:
-        trn_X, trn_y = trn_df[probs], trn_df['is_installed']
+        trn_X, trn_y = trn_df[feats], trn_df['is_installed']
         trn_d = xgb.DMatrix(trn_X, trn_y, enable_categorical=True,
                             feature_names=list(trn_X.columns), 
-                            feature_types=['q']*len(probs))
+                            feature_types=['q']*len(feats))
         model = xgb.train(
                     params, 
                     trn_d, 
@@ -241,10 +255,10 @@ if args.infer:
         save_time = '2023-06-18-16-34-37'
         model.load_model("./saved/XGBoost/"+save_time+".json")
     tst_df = df[3387880+97972:]
-    tst_X = tst_df[probs]
+    tst_X = tst_df[feats]
     tst_d = xgb.DMatrix(tst_X, enable_categorical=True,
                         feature_names=list(tst_X.columns), 
-                        feature_types=['q']*len(probs))
+                        feature_types=['q']*len(feats))
     preds = model.predict(tst_d)
     rowid = pd.read_csv('/root/autodl-tmp/yankai/data/data/tst_rowid.csv')['f_0'].to_list()
     pred_df = pd.DataFrame({

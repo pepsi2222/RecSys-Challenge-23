@@ -9,8 +9,6 @@ import logging
 import re
 from collections import OrderedDict
 import pickle
-import numpy as np
-from sklearn import metrics
 
 
 class RemoveColorFilter(logging.Filter):
@@ -98,11 +96,13 @@ def color_dict_normal(dict_, keep=True,):
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--gpu', type=str, default='1')
-parser.add_argument('--train', type=bool, default=True)
-parser.add_argument('--infer', type=bool, default=True)
-parser.add_argument('--fold', type=int, default=None)
+parser.add_argument('--probs', type=str, default='install', choices=['install', 'all'])
 parser.add_argument('--seed', type=int, default=2023)
+parser.add_argument('--gpu', type=str, default='1')
+
+parser.add_argument('--train', type=bool, default=True)
+parser.add_argument('--fold', type=int, default=None)
+parser.add_argument('--infer', type=bool, default=True)
 
 parser.add_argument('--md', type=int, default=-1)
 parser.add_argument('--nl', type=int, default=200)
@@ -148,40 +148,61 @@ if args.train:
     sys.stdout.write = logger.info
     logger.info(f"\n{set_color('Model Config', 'green')}: \n\n" + color_dict_normal(params, False))
     logger.info('Loading csv')
-    
-cache_path = '/root/autodl-tmp/xingmei/RecSysChallenge23/data/preprocessed_trn_val_tst.cache'
-if not os.path.exists(cache_path):
-    df = pd.read_csv('/root/autodl-tmp/xingmei/RecSysChallenge23/data/preprocessed_trn_val_tst.csv', sep='\t')
-    with open(cache_path, 'wb') as f:
-        pickle.dump(df, f)
-        f.close()
-else:
-    with open(cache_path, 'rb') as f:
-        df = pickle.load(f)
-        f.close()
 
-field = list(df.columns)
-field.pop(-1)
-field.pop(-1)
+if args.probs == 'all' or args.probs == 'install':
+    cache_path = f'/root/autodl-tmp/xingmei/RecSys23/data/install_probs_trn_val_tst.cache'
+    if not os.path.exists(cache_path):
+        df = pd.read_csv(f'/root/autodl-tmp/xingmei/RecSys23/data/install_probs_trn_val_tst.csv', sep='\t')
+        with open(cache_path, 'wb') as f:
+            pickle.dump(df, f)
+            f.close()
+    else:
+        with open(cache_path, 'rb') as f:
+            df = pickle.load(f)
+            f.close()
+
+if args.probs == 'all':
+    cache_path_ = f'/root/autodl-tmp/xingmei/RecSys23/data/click_probs_trn_val_tst.cache'
+    if not os.path.exists(cache_path_):
+        df_ = pd.read_csv(f'/root/autodl-tmp/xingmei/RecSys23/data/click_probs_trn_val_tst.csv', sep='\t')
+        with open(cache_path_, 'wb') as f:
+            pickle.dump(df, f)
+            f.close()
+    else:
+        with open(cache_path_, 'rb') as f:
+            df_ = pickle.load(f)
+            f.close()
+
+
+if args.probs == 'all':
+    df = pd.concat([df, df_], axis=1)
+    
+feats = list(df.columns)
+feats.remove('is_installed')
+if args.probs == 'all' or args.probs == 'install':
+    for i in [
+                'p_install_LorentzFM', 
+                'p_install_DeepFM', 
+                'p_install_EDCN', 
+                'p_install_FM', 
+                'p_install_LR', 
+                'p_install_PNN', 
+                'p_install_xDeepFM',
+                'p_install_DeepCrossing'
+            ]:
+        feats.remove(i)
 
 if args.train:
-    best_score = 100
-    auc = 0
     trn_df = df[0:3387880+97972]
-    best_fold = -1
     if args.fold is not None:
         sum_score = 0
-        kf = KFold(n_splits=args.fold)  # shuffle=True, random_state=args.seed
+        kf = KFold(n_splits=args.fold, shuffle=True, random_state=args.seed)
         for i, (trn_idx, tst_idx) in enumerate(kf.split(trn_df)):
             logger.info(f'Fold {i+1}: trn size {len(trn_idx)} tst size {len(tst_idx)}')
-            trn_X, trn_y = trn_df.loc[trn_idx, field], trn_df.loc[trn_idx, 'is_installed']
-            tst_X, tst_y = trn_df.loc[tst_idx, field], trn_df.loc[tst_idx, 'is_installed']
-            trn_d = lgb.Dataset(trn_X, trn_y, 
-                                feature_name=list(trn_X.columns), 
-                                categorical_feature=['f_2', 'f_3', 'f_4', 'f_5', 'f_6', 'f_8', 'f_9', 'f_10', 'f_11', 'f_12', 'f_13', 'f_14', 'f_15', 'f_16', 'f_17', 'f_18', 'f_19', 'f_20', 'f_21', 'f_22', 'f_23', 'f_24', 'f_25', 'f_26', 'f_30', 'f_31', 'f_32', 'f_33', 'f_34', 'f_35', 'f_36', 'f_37', 'f_38', 'f_39', 'f_40', 'f_41', 'f_42', 'f_44', 'f_45', 'f_46', 'f_47', 'f_48', 'f_49', 'f_50', 'f_51', 'f_52', 'f_53', 'f_54', 'f_55', 'f_56', 'f_57', 'f_60', 'f_61', 'f_62', 'f_63', 'f_71', 'f_72', 'f_73', 'f_74', 'f_75', 'f_76', 'f_77', 'f_78', 'f_79'])
-            tst_d = lgb.Dataset(tst_X, tst_y, reference=trn_d,
-                                feature_name=list(trn_X.columns), 
-                                categorical_feature=['f_2', 'f_3', 'f_4', 'f_5', 'f_6', 'f_8', 'f_9', 'f_10', 'f_11', 'f_12', 'f_13', 'f_14', 'f_15', 'f_16', 'f_17', 'f_18', 'f_19', 'f_20', 'f_21', 'f_22', 'f_23', 'f_24', 'f_25', 'f_26', 'f_30', 'f_31', 'f_32', 'f_33', 'f_34', 'f_35', 'f_36', 'f_37', 'f_38', 'f_39', 'f_40', 'f_41', 'f_42', 'f_44', 'f_45', 'f_46', 'f_47', 'f_48', 'f_49', 'f_50', 'f_51', 'f_52', 'f_53', 'f_54', 'f_55', 'f_56', 'f_57', 'f_60', 'f_61', 'f_62', 'f_63', 'f_71', 'f_72', 'f_73', 'f_74', 'f_75', 'f_76', 'f_77', 'f_78', 'f_79'])
+            trn_X, trn_y = trn_df.loc[trn_idx, feats], trn_df.loc[trn_idx, 'is_installed']
+            tst_X, tst_y = trn_df.loc[tst_idx, feats], trn_df.loc[tst_idx, 'is_installed']
+            trn_d = lgb.Dataset(trn_X, trn_y, feature_name=list(trn_X.columns))
+            tst_d = lgb.Dataset(tst_X, tst_y, reference=trn_d, feature_name=list(trn_X.columns))
             
             model = lgb.train(
                         params, 
@@ -189,56 +210,37 @@ if args.train:
                         valid_sets=[tst_d],
                         num_boost_round=10000,
                         early_stopping_round=200,
-                        feature_name=list(trn_X.columns), 
-                        categorical_feature=['f_2', 'f_3', 'f_4', 'f_5', 'f_6', 'f_8', 'f_9', 'f_10', 'f_11', 'f_12', 'f_13', 'f_14', 'f_15', 'f_16', 'f_17', 'f_18', 'f_19', 'f_20', 'f_21', 'f_22', 'f_23', 'f_24', 'f_25', 'f_26', 'f_30', 'f_31', 'f_32', 'f_33', 'f_34', 'f_35', 'f_36', 'f_37', 'f_38', 'f_39', 'f_40', 'f_41', 'f_42', 'f_44', 'f_45', 'f_46', 'f_47', 'f_48', 'f_49', 'f_50', 'f_51', 'f_52', 'f_53', 'f_54', 'f_55', 'f_56', 'f_57', 'f_60', 'f_61', 'f_62', 'f_63', 'f_71', 'f_72', 'f_73', 'f_74', 'f_75', 'f_76', 'f_77', 'f_78', 'f_79'])
-            
+                        feature_name=list(trn_X.columns))
             sum_score += model.best_score['valid_0']['binary_logloss']
-            if model.best_score['valid_0']['binary_logloss'] < best_score:
-                model.save_model(f"./saved/LightGBM/{log_time}_fold{i+1}.json")
-                best_score = model.best_score['valid_0']['binary_logloss']
-                best_fold = i + 1
-        logger.info(f'Best score {best_score} | Log time {log_time} | Fold {best_fold}')
-        logger.info(f'Avg score {sum_score / args.fold}')
+        logger.info(f'Avg score {sum_score / args.fold} | Log time {log_time}')
     else:
-        trn_X, trn_y = trn_df[field], trn_df['is_installed']
-        trn_d = lgb.Dataset(trn_X, trn_y,
-                            feature_name=list(trn_X.columns), 
-                            categorical_feature=['f_2', 'f_3', 'f_4', 'f_5', 'f_6', 'f_8', 'f_9', 'f_10', 'f_11', 'f_12', 'f_13', 'f_14', 'f_15', 'f_16', 'f_17', 'f_18', 'f_19', 'f_20', 'f_21', 'f_22', 'f_23', 'f_24', 'f_25', 'f_26', 'f_30', 'f_31', 'f_32', 'f_33', 'f_34', 'f_35', 'f_36', 'f_37', 'f_38', 'f_39', 'f_40', 'f_41', 'f_42', 'f_44', 'f_45', 'f_46', 'f_47', 'f_48', 'f_49', 'f_50', 'f_51', 'f_52', 'f_53', 'f_54', 'f_55', 'f_56', 'f_57', 'f_60', 'f_61', 'f_62', 'f_63', 'f_71', 'f_72', 'f_73', 'f_74', 'f_75', 'f_76', 'f_77', 'f_78', 'f_79'])
-
+        trn_X, trn_y = trn_df[feats], trn_df['is_installed']
+        trn_d = lgb.Dataset(trn_X, trn_y, feature_name=list(trn_X.columns))
         model = lgb.train(
                     params, 
                     trn_d, 
                     num_boost_round=10000,
-                    feature_name=list(trn_X.columns), 
-                    categorical_feature=['f_2', 'f_3', 'f_4', 'f_5', 'f_6', 'f_8', 'f_9', 'f_10', 'f_11', 'f_12', 'f_13', 'f_14', 'f_15', 'f_16', 'f_17', 'f_18', 'f_19', 'f_20', 'f_21', 'f_22', 'f_23', 'f_24', 'f_25', 'f_26', 'f_30', 'f_31', 'f_32', 'f_33', 'f_34', 'f_35', 'f_36', 'f_37', 'f_38', 'f_39', 'f_40', 'f_41', 'f_42', 'f_44', 'f_45', 'f_46', 'f_47', 'f_48', 'f_49', 'f_50', 'f_51', 'f_52', 'f_53', 'f_54', 'f_55', 'f_56', 'f_57', 'f_60', 'f_61', 'f_62', 'f_63', 'f_71', 'f_72', 'f_73', 'f_74', 'f_75', 'f_76', 'f_77', 'f_78', 'f_79'])
-
-        # if model.best_score['valid_0']['binary_logloss'] < best_score:
-        #     model.model_to_string(f"./saved/LightGBM/{log_time}.json")
-        #     if model.best_score['valid_0']['binary_logloss'] < best_score:
-        #         best_score = model.best_score['valid_0']['binary_logloss']
-        # logger.info(f'Best score {best_score} | Log time {log_time}')
+                    feature_name=list(trn_X.columns))
+        logger.info(f"Best score: {model.best_score['valid_0']['binary_logloss']} | Log time {log_time}")
+        if not os.path.exists("./saved/LightGBM"):
+            os.makedirs("./saved/LightGBM")
+        model.save_model(f"./saved/LightGBM/{log_time}.json")
     
 if args.infer:
     if args.train:
         save_time = log_time
-        fold = best_fold
     else:
         save_time = ''
-        fold = ''
+        model = lgb.Booster(model_file="./saved/LightGBM/"+save_time+".json")
         
-    if args.fold is not None:
-        save_pth = "./saved/LightGBM/"+save_time+"_fold{}.json"
-    else:
-        save_pth = "./saved/LightGBM/"+save_time+".json"
-        
-    tst_X = df.loc[3387880+97972:, field]
-    if args.fold is not None:
-        model = lgb.Booster(model_file=save_pth.format(fold))
+    tst_X = df.loc[3387880+97972:, feats]
     preds = model.predict(tst_X)
-    rowid = pd.read_csv('/root/autodl-tmp/xingmei/RecSysChallenge23/data/tst_rowid.csv')['f_0'].to_list()
+    rowid = pd.read_csv('/root/autodl-tmp/yankai/data/data/tst_rowid.csv')['f_0'].to_list()
     pred_df = pd.DataFrame({
                         'RowId': rowid, 
                         'is_clicked': 0, 
                         'is_installed': preds
                     })
+    if not os.path.exists("./predictions/LightGBM"):
+            os.makedirs("./predictions/LightGBM")
     pred_df.to_csv(f'./predictions/LightGBM/{save_time}.csv', sep='\t', index=False)
