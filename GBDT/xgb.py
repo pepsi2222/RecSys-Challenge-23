@@ -97,11 +97,11 @@ def color_dict_normal(dict_, keep=True,):
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--probs', type=str, default='install', choices=['install', 'all'])
-parser.add_argument('--fold', type=int, default=5)
 parser.add_argument('--seed', type=int, default=2023)
 
-parser.add_argument('--gpu', type=str, default='1')
+parser.add_argument('--gpu', type=str, default='2')
 parser.add_argument('--train', type=bool, default=True)
+parser.add_argument('--fold', type=int, default=5)
 parser.add_argument('--infer', type=bool, default=False)
 
 parser.add_argument('--md', type=int, default=5)
@@ -109,7 +109,7 @@ parser.add_argument('--mcw', type=int, default=1)
 parser.add_argument('--gamma', type=float, default=0.)
 parser.add_argument('--csb', type=float, default=0.8)
 parser.add_argument('--ss', type=float, default=0.95)
-parser.add_argument('--rl', type=float, default=40)
+parser.add_argument('--rl', type=float, default=0)
 parser.add_argument('--ra', type=float, default=10)
 parser.add_argument('--spw', type=float, default=1)
 parser.add_argument('--lr', type=float, default=0.1)
@@ -169,15 +169,26 @@ if args.probs == 'all':
 
 
 if args.probs == 'all':
-    st = time.time()
     df = pd.concat([df, df_], axis=1)
-    print(f'{time.time() - st} for concat')
     
 probs = list(df.columns)
 probs.remove('is_installed')
+for i in [
+            'p_install_LorentzFM', 
+            'p_install_DeepFM', 
+            'p_install_EDCN', 
+            'p_install_FM', 
+            'p_install_LR', 
+            'p_install_PNN', 
+            'p_install_xDeepFM',
+            'p_install_DeepCrossing'
+        ]:
+    probs.remove(i)
 
 if args.train:
     trn_df = df[0:3387880+97972]
+    # trn_df = df[3387880:3387880+97972]
+    # trn_df.reset_index(inplace=True)
     if args.fold is not None:
         sum_score = 0
         kf = KFold(n_splits=args.fold, shuffle=True, random_state=args.seed)
@@ -217,6 +228,8 @@ if args.train:
                     verbose_eval=100
                 )
         logger.info(f'Best score: {model.best_score} at iteration {model.best_iteration}')
+        if not os.path.exists("./saved/XGBoost"):
+            os.makedirs("./saved/XGBoost")
         model.save_model(f"./saved/XGBoost/{log_time}.json")
         logger.info(f'Best score {model.best_score} | Log time {log_time}')
     
@@ -224,19 +237,21 @@ if args.infer:
     if args.train:
         save_time = log_time
     else:
-        save_time = ''
+        model = xgb.Booster(params)
+        save_time = '2023-06-18-16-34-37'
         model.load_model("./saved/XGBoost/"+save_time+".json")
     tst_df = df[3387880+97972:]
-    model = xgb.Booster(params)
     tst_X = tst_df[probs]
     tst_d = xgb.DMatrix(tst_X, enable_categorical=True,
-                        feature_names=list(trn_X.columns), 
+                        feature_names=list(tst_X.columns), 
                         feature_types=['q']*len(probs))
     preds = model.predict(tst_d)
-    rowid = pd.read_csv('/root/autodl-tmp/xingmei/RecSysChallenge23/data/tst_rowid.csv')['f_0'].to_list()
+    rowid = pd.read_csv('/root/autodl-tmp/yankai/data/data/tst_rowid.csv')['f_0'].to_list()
     pred_df = pd.DataFrame({
                         'RowId': rowid, 
                         'is_clicked': 0, 
                         'is_installed': preds
                     })
+    if not os.path.exists("./predictions/XGBoost"):
+            os.makedirs("./predictions/XGBoost")
     pred_df.to_csv(f'./predictions/XGBoost/{save_time}.csv', sep='\t', index=False)
