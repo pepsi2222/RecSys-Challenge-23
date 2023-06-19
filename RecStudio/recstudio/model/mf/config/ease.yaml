@@ -1,4 +1,0 @@
-train:
-  epochs: 1
-  gpu: ~
-  lambda: 250
