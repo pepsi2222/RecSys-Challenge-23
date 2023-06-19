@@ -87,7 +87,7 @@ def get_default_parser(task, with_weekday, fine_tune, model) -> ArgumentParser:
     # parser.add_argument('--task', '-t', type=str, default='install')
     
     group = parser.add_argument_group('main')
-    group.add_argument('--model', '-m', type=str, default='PLEDCNv2', help='model name')
+    group.add_argument('--model', '-m', type=str, default=model, help='model name')
     group.add_argument('--dataset', '-d', type=str, default=dataset, help='dataset name')
     group.add_argument('--data_config_path', type=str, default=None, help='path of datasets config file')
     group.add_argument('--mode', choices=['tune', 'light', 'detail'],
