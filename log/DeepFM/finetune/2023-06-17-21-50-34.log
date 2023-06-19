@@ -1,0 +1,351 @@
+[2023-06-17 21:50:34] INFO Log saved in /data2/home/xingmei/RecSys23/log/DeepFM/finetune/2023-06-17-21-50-34.log.
+[2023-06-17 21:50:34] INFO Global seed set to 2022
+[2023-06-17 21:50:34] INFO dataset is read from /data2/home/xingmei/RecSys23/data.
+[2023-06-17 21:51:52] INFO 
+Dataset Info: 
+
+=========================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================
+interaction information: 
+field        f_1          f_2          f_3          f_4          f_5          f_6          f_8          f_9          f_10         f_11         f_12         f_13         f_14         f_15         f_16         f_17         f_18         f_19         f_20         f_21         f_22         f_23         f_24         f_25         f_26         f_30         f_31         f_32         f_33         f_34         f_35         f_36         f_37         f_38         f_39         f_40         f_41         f_42         f_43         f_44         f_45         f_46         f_47         f_48         f_49         f_50         f_51         f_52         f_53         f_54         f_55         f_56         f_57         f_58         f_59         f_60         f_61         f_62         f_63         f_64         f_65         f_66         f_67         f_68         f_69         f_70         f_71         f_72         f_73         f_74         f_75         f_76         f_77         f_78         f_79         is_installed 
+type         float        token        token        token        token        token        token        token        token        token        token        token        token        token        token        token        token        token        token        token        token        token        token        token        token        token        token        token        token        token        token        token        token        token        token        token        token        token        float        token        token        token        token        token        token        token        token        token        token        token        token        token        token        float        float        token        token        token        token        float        float        float        float        float        float        float        token        token        token        token        token        token        token        token        token        float        
+##           -            136          6            631          7            4455         7            8            4            25           25           206          19           4277         11           42           543          20           56           35           25           5            5            4            3            3            3            5            3            3            3            3            3            3            3            3            3            6725         -            18           19           11           21           21           15           22           1725         133          85           172          306          182          415          -            -            232          584          1032         298          -            -            -            -            -            -            -            5            12           9            5            32           9            5            11           7            -            
+=========================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================
+Total Interactions: 1045756
+=========================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================
+f_1=StandardScaler()
+f_43=StandardScaler()
+f_58=StandardScaler()
+f_59=StandardScaler()
+f_64=MinMaxScaler()
+f_65=StandardScaler()
+f_66=StandardScaler()
+f_67=StandardScaler()
+f_68=StandardScaler()
+f_69=StandardScaler()
+f_70=StandardScaler()
+[2023-06-17 21:51:52] INFO 
+Model Config: 
+
+data:
+	binarized_rating_thres=None
+	fm_eval=False
+	neg_count=0
+	sampler=None
+	shuffle=False
+	split_mode=entry
+	split_ratio=[1016364, 29392, 0]
+	fmeval=True
+	low_rating_thres=None
+eval:
+	batch_size=4096
+	cutoff=[5, 10, 20]
+	val_metrics=['logloss', 'auc', 'accuracy', 'f1', 'precision', 'recall']
+	val_n_epoch=1
+	test_metrics=['logloss', 'auc', 'accuracy', 'f1', 'precision', 'recall']
+	topk=100
+	save_path=./saved/
+	binarized_prob_thres=0.5
+model:
+	embed_dim=64
+	item_bias=False
+	mlp_layer=[256, 128]
+	activation=tanh
+	dropout=0.3
+train:
+	accelerator=gpu
+	ann=None
+	batch_size=512
+	early_stop_mode=min
+	early_stop_patience=10
+	epochs=1000
+	gpu=[2]
+	grad_clip_norm=None
+	init_method=xavier_normal
+	item_batch_size=1024
+	learner=adam
+	learning_rate=0.005
+	num_threads=10
+	sampling_method=none
+	sampler=uniform
+	negative_count=0
+	excluding_hist=False
+	scheduler=exponential
+	seed=2022
+	weight_decay=1e-06
+	tensorboard_path=None
+[2023-06-17 21:51:52] INFO save_dir:./saved/
+[2023-06-17 21:51:52] INFO DeepFM(
+  (loss_fn): BCEWithLogitLoss()
+  (linear): LinearLayer(
+    bias=True
+    (embeddings): ModuleDict(
+      (f_74): Embedding(5, 1, padding_idx=0)
+      (f_8): Embedding(7, 1, padding_idx=0)
+      (f_11): Embedding(25, 1, padding_idx=0)
+      (f_25): Embedding(4, 1, padding_idx=0)
+      (f_4): Embedding(631, 1, padding_idx=0)
+      (f_52): Embedding(133, 1, padding_idx=0)
+      (f_61): Embedding(584, 1, padding_idx=0)
+      (f_34): Embedding(3, 1, padding_idx=0)
+      (f_23): Embedding(5, 1, padding_idx=0)
+      (f_37): Embedding(3, 1, padding_idx=0)
+      (f_76): Embedding(9, 1, padding_idx=0)
+      (f_30): Embedding(3, 1, padding_idx=0)
+      (f_20): Embedding(56, 1, padding_idx=0)
+      (f_75): Embedding(32, 1, padding_idx=0)
+      (f_69): DenseEmbedding(
+        embedding_dim=1, bias=False, batch_norm=True
+        (batch_norm_layer): BatchNorm1d(1, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (weight): Linear(in_features=1, out_features=1, bias=False)
+      )
+      (f_54): Embedding(172, 1, padding_idx=0)
+      (f_56): Embedding(182, 1, padding_idx=0)
+      (f_15): Embedding(4277, 1, padding_idx=0)
+      (f_46): Embedding(11, 1, padding_idx=0)
+      (f_44): Embedding(18, 1, padding_idx=0)
+      (f_48): Embedding(21, 1, padding_idx=0)
+      (f_51): Embedding(1725, 1, padding_idx=0)
+      (f_35): Embedding(3, 1, padding_idx=0)
+      (f_68): DenseEmbedding(
+        embedding_dim=1, bias=False, batch_norm=True
+        (batch_norm_layer): BatchNorm1d(1, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (weight): Linear(in_features=1, out_features=1, bias=False)
+      )
+      (f_79): Embedding(7, 1, padding_idx=0)
+      (f_21): Embedding(35, 1, padding_idx=0)
+      (f_45): Embedding(19, 1, padding_idx=0)
+      (f_16): Embedding(11, 1, padding_idx=0)
+      (f_41): Embedding(3, 1, padding_idx=0)
+      (f_17): Embedding(42, 1, padding_idx=0)
+      (f_26): Embedding(3, 1, padding_idx=0)
+      (f_9): Embedding(8, 1, padding_idx=0)
+      (f_12): Embedding(25, 1, padding_idx=0)
+      (f_1): DenseEmbedding(
+        embedding_dim=1, bias=False, batch_norm=True
+        (batch_norm_layer): BatchNorm1d(1, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (weight): Linear(in_features=1, out_features=1, bias=False)
+      )
+      (f_53): Embedding(85, 1, padding_idx=0)
+      (f_58): DenseEmbedding(
+        embedding_dim=1, bias=False, batch_norm=True
+        (batch_norm_layer): BatchNorm1d(1, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (weight): Linear(in_features=1, out_features=1, bias=False)
+      )
+      (f_32): Embedding(5, 1, padding_idx=0)
+      (f_36): Embedding(3, 1, padding_idx=0)
+      (f_10): Embedding(4, 1, padding_idx=0)
+      (f_47): Embedding(21, 1, padding_idx=0)
+      (f_43): DenseEmbedding(
+        embedding_dim=1, bias=False, batch_norm=True
+        (batch_norm_layer): BatchNorm1d(1, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (weight): Linear(in_features=1, out_features=1, bias=False)
+      )
+      (f_60): Embedding(232, 1, padding_idx=0)
+      (f_62): Embedding(1032, 1, padding_idx=0)
+      (f_5): Embedding(7, 1, padding_idx=0)
+      (f_64): DenseEmbedding(
+        embedding_dim=1, bias=False, batch_norm=True
+        (batch_norm_layer): BatchNorm1d(1, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (weight): Linear(in_features=1, out_features=1, bias=False)
+      )
+      (f_72): Embedding(12, 1, padding_idx=0)
+      (f_73): Embedding(9, 1, padding_idx=0)
+      (f_49): Embedding(15, 1, padding_idx=0)
+      (f_3): Embedding(6, 1, padding_idx=0)
+      (f_22): Embedding(25, 1, padding_idx=0)
+      (f_31): Embedding(3, 1, padding_idx=0)
+      (f_59): DenseEmbedding(
+        embedding_dim=1, bias=False, batch_norm=True
+        (batch_norm_layer): BatchNorm1d(1, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (weight): Linear(in_features=1, out_features=1, bias=False)
+      )
+      (f_77): Embedding(5, 1, padding_idx=0)
+      (f_39): Embedding(3, 1, padding_idx=0)
+      (f_42): Embedding(6725, 1, padding_idx=0)
+      (f_70): DenseEmbedding(
+        embedding_dim=1, bias=False, batch_norm=True
+        (batch_norm_layer): BatchNorm1d(1, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (weight): Linear(in_features=1, out_features=1, bias=False)
+      )
+      (f_24): Embedding(5, 1, padding_idx=0)
+      (f_18): Embedding(543, 1, padding_idx=0)
+      (f_6): Embedding(4455, 1, padding_idx=0)
+      (f_67): DenseEmbedding(
+        embedding_dim=1, bias=False, batch_norm=True
+        (batch_norm_layer): BatchNorm1d(1, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (weight): Linear(in_features=1, out_features=1, bias=False)
+      )
+      (f_33): Embedding(3, 1, padding_idx=0)
+      (f_65): DenseEmbedding(
+        embedding_dim=1, bias=False, batch_norm=True
+        (batch_norm_layer): BatchNorm1d(1, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (weight): Linear(in_features=1, out_features=1, bias=False)
+      )
+      (f_71): Embedding(5, 1, padding_idx=0)
+      (f_55): Embedding(306, 1, padding_idx=0)
+      (f_13): Embedding(206, 1, padding_idx=0)
+      (f_40): Embedding(3, 1, padding_idx=0)
+      (f_50): Embedding(22, 1, padding_idx=0)
+      (f_19): Embedding(20, 1, padding_idx=0)
+      (f_63): Embedding(298, 1, padding_idx=0)
+      (f_14): Embedding(19, 1, padding_idx=0)
+      (f_57): Embedding(415, 1, padding_idx=0)
+      (f_78): Embedding(11, 1, padding_idx=0)
+      (f_66): DenseEmbedding(
+        embedding_dim=1, bias=False, batch_norm=True
+        (batch_norm_layer): BatchNorm1d(1, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (weight): Linear(in_features=1, out_features=1, bias=False)
+      )
+      (f_2): Embedding(136, 1, padding_idx=0)
+      (f_38): Embedding(3, 1, padding_idx=0)
+    )
+  )
+  (fm): FMLayer(reduction=sum)
+  (embedding): Embeddings(
+    num_features=75, embed_dim=64, reduction=mean
+    (embeddings): ModuleDict(
+      (f_74): Embedding(5, 64, padding_idx=0)
+      (f_8): Embedding(7, 64, padding_idx=0)
+      (f_11): Embedding(25, 64, padding_idx=0)
+      (f_25): Embedding(4, 64, padding_idx=0)
+      (f_4): Embedding(631, 64, padding_idx=0)
+      (f_52): Embedding(133, 64, padding_idx=0)
+      (f_61): Embedding(584, 64, padding_idx=0)
+      (f_34): Embedding(3, 64, padding_idx=0)
+      (f_23): Embedding(5, 64, padding_idx=0)
+      (f_37): Embedding(3, 64, padding_idx=0)
+      (f_76): Embedding(9, 64, padding_idx=0)
+      (f_30): Embedding(3, 64, padding_idx=0)
+      (f_20): Embedding(56, 64, padding_idx=0)
+      (f_75): Embedding(32, 64, padding_idx=0)
+      (f_69): DenseEmbedding(
+        embedding_dim=64, bias=False, batch_norm=True
+        (batch_norm_layer): BatchNorm1d(1, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (weight): Linear(in_features=1, out_features=64, bias=False)
+      )
+      (f_54): Embedding(172, 64, padding_idx=0)
+      (f_56): Embedding(182, 64, padding_idx=0)
+      (f_15): Embedding(4277, 64, padding_idx=0)
+      (f_46): Embedding(11, 64, padding_idx=0)
+      (f_44): Embedding(18, 64, padding_idx=0)
+      (f_48): Embedding(21, 64, padding_idx=0)
+      (f_51): Embedding(1725, 64, padding_idx=0)
+      (f_35): Embedding(3, 64, padding_idx=0)
+      (f_68): DenseEmbedding(
+        embedding_dim=64, bias=False, batch_norm=True
+        (batch_norm_layer): BatchNorm1d(1, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (weight): Linear(in_features=1, out_features=64, bias=False)
+      )
+      (f_79): Embedding(7, 64, padding_idx=0)
+      (f_21): Embedding(35, 64, padding_idx=0)
+      (f_45): Embedding(19, 64, padding_idx=0)
+      (f_16): Embedding(11, 64, padding_idx=0)
+      (f_41): Embedding(3, 64, padding_idx=0)
+      (f_17): Embedding(42, 64, padding_idx=0)
+      (f_26): Embedding(3, 64, padding_idx=0)
+      (f_9): Embedding(8, 64, padding_idx=0)
+      (f_12): Embedding(25, 64, padding_idx=0)
+      (f_1): DenseEmbedding(
+        embedding_dim=64, bias=False, batch_norm=True
+        (batch_norm_layer): BatchNorm1d(1, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (weight): Linear(in_features=1, out_features=64, bias=False)
+      )
+      (f_53): Embedding(85, 64, padding_idx=0)
+      (f_58): DenseEmbedding(
+        embedding_dim=64, bias=False, batch_norm=True
+        (batch_norm_layer): BatchNorm1d(1, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (weight): Linear(in_features=1, out_features=64, bias=False)
+      )
+      (f_32): Embedding(5, 64, padding_idx=0)
+      (f_36): Embedding(3, 64, padding_idx=0)
+      (f_10): Embedding(4, 64, padding_idx=0)
+      (f_47): Embedding(21, 64, padding_idx=0)
+      (f_43): DenseEmbedding(
+        embedding_dim=64, bias=False, batch_norm=True
+        (batch_norm_layer): BatchNorm1d(1, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (weight): Linear(in_features=1, out_features=64, bias=False)
+      )
+      (f_60): Embedding(232, 64, padding_idx=0)
+      (f_62): Embedding(1032, 64, padding_idx=0)
+      (f_5): Embedding(7, 64, padding_idx=0)
+      (f_64): DenseEmbedding(
+        embedding_dim=64, bias=False, batch_norm=True
+        (batch_norm_layer): BatchNorm1d(1, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (weight): Linear(in_features=1, out_features=64, bias=False)
+      )
+      (f_72): Embedding(12, 64, padding_idx=0)
+      (f_73): Embedding(9, 64, padding_idx=0)
+      (f_49): Embedding(15, 64, padding_idx=0)
+      (f_3): Embedding(6, 64, padding_idx=0)
+      (f_22): Embedding(25, 64, padding_idx=0)
+      (f_31): Embedding(3, 64, padding_idx=0)
+      (f_59): DenseEmbedding(
+        embedding_dim=64, bias=False, batch_norm=True
+        (batch_norm_layer): BatchNorm1d(1, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (weight): Linear(in_features=1, out_features=64, bias=False)
+      )
+      (f_77): Embedding(5, 64, padding_idx=0)
+      (f_39): Embedding(3, 64, padding_idx=0)
+      (f_42): Embedding(6725, 64, padding_idx=0)
+      (f_70): DenseEmbedding(
+        embedding_dim=64, bias=False, batch_norm=True
+        (batch_norm_layer): BatchNorm1d(1, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (weight): Linear(in_features=1, out_features=64, bias=False)
+      )
+      (f_24): Embedding(5, 64, padding_idx=0)
+      (f_18): Embedding(543, 64, padding_idx=0)
+      (f_6): Embedding(4455, 64, padding_idx=0)
+      (f_67): DenseEmbedding(
+        embedding_dim=64, bias=False, batch_norm=True
+        (batch_norm_layer): BatchNorm1d(1, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (weight): Linear(in_features=1, out_features=64, bias=False)
+      )
+      (f_33): Embedding(3, 64, padding_idx=0)
+      (f_65): DenseEmbedding(
+        embedding_dim=64, bias=False, batch_norm=True
+        (batch_norm_layer): BatchNorm1d(1, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (weight): Linear(in_features=1, out_features=64, bias=False)
+      )
+      (f_71): Embedding(5, 64, padding_idx=0)
+      (f_55): Embedding(306, 64, padding_idx=0)
+      (f_13): Embedding(206, 64, padding_idx=0)
+      (f_40): Embedding(3, 64, padding_idx=0)
+      (f_50): Embedding(22, 64, padding_idx=0)
+      (f_19): Embedding(20, 64, padding_idx=0)
+      (f_63): Embedding(298, 64, padding_idx=0)
+      (f_14): Embedding(19, 64, padding_idx=0)
+      (f_57): Embedding(415, 64, padding_idx=0)
+      (f_78): Embedding(11, 64, padding_idx=0)
+      (f_66): DenseEmbedding(
+        embedding_dim=64, bias=False, batch_norm=True
+        (batch_norm_layer): BatchNorm1d(1, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (weight): Linear(in_features=1, out_features=64, bias=False)
+      )
+      (f_2): Embedding(136, 64, padding_idx=0)
+      (f_38): Embedding(3, 64, padding_idx=0)
+    )
+  )
+  (mlp): MLPModule(
+    (model): Sequential(
+      (0): Dropout(p=0.3, inplace=False)
+      (1): Linear(in_features=4800, out_features=256, bias=True)
+      (2): Tanh()
+      (3): Dropout(p=0.3, inplace=False)
+      (4): Linear(in_features=256, out_features=128, bias=True)
+      (5): Tanh()
+      (6): Dropout(p=0.3, inplace=False)
+      (7): Linear(in_features=128, out_features=1, bias=True)
+    )
+  )
+)
+[2023-06-17 21:51:52] INFO GPU id [2] are selected.
+[2023-06-17 21:53:03] INFO Training: Epoch=  0 [logloss=0.4884 accuracy=0.8145 f1=0.1783 precision=0.5400 recall=0.1069 auc=0.7904 train_loss_0=0.3744]
+[2023-06-17 21:53:03] INFO Train time: 70.21694s. Valid time: 0.17984s. GPU RAM: 0.35/10.76 GB
+[2023-06-17 21:53:03] INFO logloss improved. Best value: 0.4884
+[2023-06-17 21:54:13] INFO Training: Epoch=  1 [logloss=0.5235 accuracy=0.8116 f1=0.3135 precision=0.5013 recall=0.2285 auc=0.7719 train_loss_0=0.3161]
+[2023-06-17 21:54:13] INFO Train time: 69.67615s. Valid time: 0.16178s. GPU RAM: 0.35/10.76 GB
+[2023-06-17 21:55:22] INFO Training: Epoch=  2 [logloss=0.5625 accuracy=0.8005 f1=0.3205 precision=0.4476 recall=0.2498 auc=0.7613 train_loss_0=0.3066]
+[2023-06-17 21:55:22] INFO Train time: 68.55790s. Valid time: 0.15061s. GPU RAM: 0.35/10.76 GB
+[2023-06-17 21:56:34] INFO Training: Epoch=  3 [logloss=0.6557 accuracy=0.7699 f1=0.4325 precision=0.4041 recall=0.4655 auc=0.7518 train_loss_0=0.2915]
+[2023-06-17 21:56:34] INFO Train time: 71.93459s. Valid time: 0.22810s. GPU RAM: 0.35/10.76 GB
+[2023-06-17 21:57:52] INFO Best model checkpoint saved in ./saved/DeepFM/recsys/2023-06-17-21-50-34.ckpt.

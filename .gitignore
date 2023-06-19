@@ -62,7 +62,6 @@ coverage.xml
 *.pot
 
 # Django stuff:
-*.log
 local_settings.py
 db.sqlite3
 db.sqlite3-journal
@@ -143,7 +142,7 @@ cython_debug/
 tensorboard/
 .vscode/
 nni-experiments/
-**/log
+
 **/saved
 **/.recstudio
 datasets/*
@@ -156,3 +155,4 @@ predictions/
 predictions0/
 predictions1401/
 predictionsA100/
+log0/
