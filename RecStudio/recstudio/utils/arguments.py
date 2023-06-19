@@ -61,18 +61,34 @@ def dict2arguments(config: Dict, parser: ArgumentParser) -> ArgumentParser:
     return parser
 
 
-def get_default_parser() -> ArgumentParser:
-    # _dir = os.path.dirname(os.path.realpath(__file__))
-    # base_conf_file = os.path.join(_dir, "../model/basemodel/basemodel.yaml")
-    # base_config = parser_yaml(base_conf_file)
+def get_default_parser(task, with_weekday, fine_tune, model) -> ArgumentParser:
+    if model in ['HardShare', 'MMoE', 'PLE', 'AITM']:
+        task = 'multi'
+        
+    if fine_tune == True:
+        ft = '_finetune'
+    else:
+        ft = ''
+    
+    if with_weekday == True:
+        ww = '_with_weekday'
+    else:
+        ww = ''
+        
+    dataset = task + ft + ww
+    
     parser = ArgumentParser(
         prog='RecStudio',
         description="RecStudio Argparser",
         argument_default=SUPPRESS,
         formatter_class=ArgumentDefaultsHelpFormatter)
+    # parser.add_argument('--finetune', '-ft', type=bool, default=False, action='store_true')
+    # parser.add_argument('--withweekday', '-ww', type=bool, default=False, action='store_true')
+    # parser.add_argument('--task', '-t', type=str, default='install')
+    
     group = parser.add_argument_group('main')
-    group.add_argument('--model', '-m', type=str, default='DCNv2', help='model name')
-    group.add_argument('--dataset', '-d', type=str, default='recsys', help='dataset name')
+    group.add_argument('--model', '-m', type=str, default='PLEDCNv2', help='model name')
+    group.add_argument('--dataset', '-d', type=str, default=dataset, help='dataset name')
     group.add_argument('--data_config_path', type=str, default=None, help='path of datasets config file')
     group.add_argument('--mode', choices=['tune', 'light', 'detail'],
                         default='light', help='flag indiates model tuning')
