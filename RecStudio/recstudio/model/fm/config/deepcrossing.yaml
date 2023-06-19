@@ -1,6 +1,9 @@
 model:
-  hidden_dims: [64, 64, 64]
+  hidden_dims: [256, 256, 256]
   activation: relu
   dropout: 0.5
-  batch_norm: False
+  batch_norm: True
   layer_norm: True
+
+train:
+  weight_decay: 1e-6

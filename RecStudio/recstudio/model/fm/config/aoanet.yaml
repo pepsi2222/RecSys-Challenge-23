@@ -1,6 +1,11 @@
 model:
-  mlp_layer: [64, 64]
+  mlp_layer: [256,64]
   activation: relu
-  dropout: 0.2
-  num_subspaces: 3
-  num_interaction_layers: 3
+  dropout: 0.5
+  num_subspaces: 2
+  num_interaction_layers: 2
+  embed_dim: 10
+
+train:
+  learning_rate: 1e-3
+  weight_decay: 1e-6

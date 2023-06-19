@@ -1,5 +1,10 @@
 model:
   embed_dim: 10
-  mlp_layer: [256, 256, 256]
+  mlp_layer: [256, 128]
   activation: tanh
   dropout: 0.3
+
+train:
+  learning_rate: 1e-3
+  weight_decay: 1e-6
+  scheduler: exponential

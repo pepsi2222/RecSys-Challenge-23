@@ -1,6 +1,9 @@
 model:
   order: 5
   deep: True
-  mlp_layer: [128, 128]
+  mlp_layer: [512,256]
   activation: relu
-  dropout: 0.5
+  dropout: 0
+
+train:
+  weight_decay: 0

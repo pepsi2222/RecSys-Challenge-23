@@ -1,9 +1,12 @@
 model:
   top_mlp_layer: [128, 128]
   top_activation: relu
-  top_dropout: 0.5
+  top_dropout: 0
   top_batch_norm: False
   bottom_mlp_layer: [128, 128]
   bottom_activation: relu
-  bottom_dropout: 0.5
+  bottom_dropout: 0
   bottom_batch_norm: False
+
+train:
+  weight_decay: 1e-6
