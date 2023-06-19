@@ -129,7 +129,7 @@ def get_model(model_name: str):
         Recommender: model class
         Dict: model configuration dict
     """
-    model_submodule = ['ae', 'mf', 'seq', 'fm', 'graph', 'kg', 'debias', 'multitask']
+    model_submodule = ['fm', 'multitask']
 
     model_file_name = model_name.lower()
     model_module = None
