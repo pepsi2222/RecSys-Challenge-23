@@ -20,6 +20,7 @@ data:   # params related to dataset
     sampler: ~ # [uniform]
     shuffle: False
     split_mode: user_entry    # [user, entry, user_entry]
+    split_ratio: ~
     # split_ratio: [0.8,0.1,0.1]  # list or int type, list type for split by ratio, int type for leave one out
 #     split_ratio: [1016364, 29392, 0]        ###for fine tune
 #     split_ratio: [3387880, 97972, 160973]   ###for test
@@ -34,13 +35,13 @@ train:
 
     # ann: {index: 'IVFx,Flat', parameter: ~}  ## 1 HNSWx,Flat; 2 Flat; 3 IVFx,Flat ## {nprobe: 1}  {efSearch: 1}
     ann: ~
-    batch_size: 512
+    batch_size: 2048
 
     early_stop_mode: min
     early_stop_patience: 10
 
     epochs: 1000
-    gpu: [1]
+    gpu: [3]
     grad_clip_norm: ~
     init_method: xavier_normal  # [xavier_normal, normal]
     item_batch_size: 1024  # batch size for items to get all item features or get full item scores.
