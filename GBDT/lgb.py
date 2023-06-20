@@ -96,13 +96,14 @@ def color_dict_normal(dict_, keep=True,):
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--probs', type=str, default='install', choices=['install', 'all'])
+parser.add_argument('--probs', type=str, default='install', choices=['install', 'all', 'none'])
 parser.add_argument('--seed', type=int, default=2023)
-parser.add_argument('--gpu', type=str, default='1')
 
 parser.add_argument('--train', type=bool, default=True)
-parser.add_argument('--fold', type=int, default=None)
 parser.add_argument('--infer', type=bool, default=True)
+parser.add_argument('--infer_all', type=bool, default=False)
+
+parser.add_argument('--weekday', type=bool, default=True)
 
 parser.add_argument('--md', type=int, default=-1)
 parser.add_argument('--nl', type=int, default=200)
@@ -117,8 +118,6 @@ parser.add_argument('--bfq', type=int, default=5)
 parser.add_argument('--lr', type=float, default=0.005)
 
 args = parser.parse_args() 
-
-os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
 
 
 params = {
@@ -140,15 +139,16 @@ params = {
     'device_type':'cpu',
     'verbose': 1,
 }
+
 if args.train:
     log_time = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())
-    log_path = f"./log/LightGBM/{log_time}.log"
+    log_path = f"./log/LightGBM/{args.probs}/{log_time}.log"
     logger = get_logger(log_path)
     logger.info(f'log saved in {log_path}')
     sys.stdout.write = logger.info
     logger.info(f"\n{set_color('Model Config', 'green')}: \n\n" + color_dict_normal(params, False))
     logger.info('Loading csv')
-
+    
 if args.probs == 'all' or args.probs == 'install':
     cache_path = f'/root/autodl-tmp/xingmei/RecSys23/data/install_probs_trn_val_tst.cache'
     if not os.path.exists(cache_path):
@@ -172,6 +172,22 @@ if args.probs == 'all':
         with open(cache_path_, 'rb') as f:
             df_ = pickle.load(f)
             f.close()
+            
+if args.probs == 'none':
+    cache_path = '/root/autodl-tmp/xingmei/RecSys23/data/preprocessed_trn_val_tst.cache'
+    path = '/root/autodl-tmp/xingmei/RecSys23/data/preprocessed_trn_val_tst.csv'
+    if args.weekday:
+        cache_path = f'/root/autodl-tmp/xingmei/RecSys23/data/preprocessed_trn_val_tst_weekday.cache'
+        path = '/root/autodl-tmp/xingmei/RecSys23/data/preprocessed_trn_val_tst_with_weekday.csv'
+    if not os.path.exists(cache_path):
+        df = pd.read_csv(path, sep='\t')
+        with open(cache_path, 'wb') as f:
+            pickle.dump(df, f)
+            f.close()
+    else:
+        with open(cache_path, 'rb') as f:
+            df = pickle.load(f)
+            f.close()
 
 
 if args.probs == 'all':
@@ -180,51 +196,35 @@ if args.probs == 'all':
 feats = list(df.columns)
 feats.remove('is_installed')
 if args.probs == 'all' or args.probs == 'install':
-    for i in [
-                'p_install_LorentzFM', 
-                'p_install_DeepFM', 
-                'p_install_EDCN', 
-                'p_install_FM', 
-                'p_install_LR', 
-                'p_install_PNN', 
-                'p_install_xDeepFM',
-                'p_install_DeepCrossing'
-            ]:
-        feats.remove(i)
+    for i in feats:
+        if i not in [
+                        'p_install_PLE', 
+                        'p_install_MMoE', 
+                        'p_install_IFM',
+                        'p_install_FwFM',
+                        'p_install_DCNv2',
+                    ]:
+            feats.remove(i)
+
 
 if args.train:
-    trn_df = df[0:3387880+97972]
-    if args.fold is not None:
-        sum_score = 0
-        kf = KFold(n_splits=args.fold, shuffle=True, random_state=args.seed)
-        for i, (trn_idx, tst_idx) in enumerate(kf.split(trn_df)):
-            logger.info(f'Fold {i+1}: trn size {len(trn_idx)} tst size {len(tst_idx)}')
-            trn_X, trn_y = trn_df.loc[trn_idx, feats], trn_df.loc[trn_idx, 'is_installed']
-            tst_X, tst_y = trn_df.loc[tst_idx, feats], trn_df.loc[tst_idx, 'is_installed']
-            trn_d = lgb.Dataset(trn_X, trn_y, feature_name=list(trn_X.columns))
-            tst_d = lgb.Dataset(tst_X, tst_y, reference=trn_d, feature_name=list(trn_X.columns))
-            
-            model = lgb.train(
-                        params, 
-                        trn_d, 
-                        valid_sets=[tst_d],
-                        num_boost_round=10000,
-                        early_stopping_round=200,
-                        feature_name=list(trn_X.columns))
-            sum_score += model.best_score['valid_0']['binary_logloss']
-        logger.info(f'Avg score {sum_score / args.fold} | Log time {log_time}')
-    else:
-        trn_X, trn_y = trn_df[feats], trn_df['is_installed']
-        trn_d = lgb.Dataset(trn_X, trn_y, feature_name=list(trn_X.columns))
-        model = lgb.train(
-                    params, 
-                    trn_d, 
-                    num_boost_round=10000,
-                    feature_name=list(trn_X.columns))
-        logger.info(f"Best score: {model.best_score['valid_0']['binary_logloss']} | Log time {log_time}")
-        if not os.path.exists("./saved/LightGBM"):
-            os.makedirs("./saved/LightGBM")
-        model.save_model(f"./saved/LightGBM/{log_time}.json")
+    trn_df = df[0:3387880]
+    val_df = df[3387880:3387880+97972]
+    trn_X, trn_y = trn_df[feats], trn_df['is_installed']
+    val_X, val_y = val_df[feats], val_df['is_installed']
+    trn_d = lgb.Dataset(trn_X, trn_y, feature_name=list(trn_X.columns))
+    val_d = lgb.Dataset(val_X, val_y, reference=trn_d, feature_name=list(trn_X.columns))
+    model = lgb.train(
+                params, 
+                trn_d, 
+                valid_sets=[val_d],
+                num_boost_round=10000,
+                early_stopping_round=200,
+                feature_name=list(trn_X.columns))
+    logger.info(f"Best score: {model.best_score['valid_0']['binary_logloss']} | Log time {log_time}")
+    if not os.path.exists("./saved/LightGBM"):
+        os.makedirs("./saved/LightGBM")
+    model.save_model(f"./saved/LightGBM/{log_time}.json")
     
 if args.infer:
     if args.train:
@@ -233,14 +233,21 @@ if args.infer:
         save_time = ''
         model = lgb.Booster(model_file="./saved/LightGBM/"+save_time+".json")
         
-    tst_X = df.loc[3387880+97972:, feats]
-    preds = model.predict(tst_X)
-    rowid = pd.read_csv('/root/autodl-tmp/yankai/data/data/tst_rowid.csv')['f_0'].to_list()
-    pred_df = pd.DataFrame({
-                        'RowId': rowid, 
-                        'is_clicked': 0, 
-                        'is_installed': preds
-                    })
     if not os.path.exists("./predictions/LightGBM"):
             os.makedirs("./predictions/LightGBM")
-    pred_df.to_csv(f'./predictions/LightGBM/{save_time}.csv', sep='\t', index=False)
+    
+    if not args.infer_all:
+        tst_X = df.loc[3387880+97972:, feats]
+        preds = model.predict(tst_X)
+        rowid = pd.read_csv('/root/autodl-tmp/yankai/data/data/tst_rowid.csv')['f_0'].to_list()
+        pred_df = pd.DataFrame({
+                            'RowId': rowid, 
+                            'is_clicked': 0, 
+                            'is_installed': preds
+                        })
+        pred_df.to_csv(f'./predictions/LightGBM/{save_time}.csv', sep='\t', index=False)
+    else:
+        X = df[feats]
+        preds = model.predict(X)
+        pred_df = pd.DataFrame({'is_installed_prob': preds})
+        pred_df.to_csv(f'./predictions/LightGBM/{save_time}is_installed.csv', sep='\t', index=False)

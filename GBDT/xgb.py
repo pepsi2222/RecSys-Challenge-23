@@ -101,16 +101,18 @@ parser.add_argument('--seed', type=int, default=2023)
 
 parser.add_argument('--gpu', type=str, default='2')
 parser.add_argument('--train', type=bool, default=True)
-parser.add_argument('--fold', type=int, default=None)
 parser.add_argument('--infer', type=bool, default=True)
+parser.add_argument('--infer_all', type=bool, default=False)
+
+parser.add_argument('--weekday', type=bool, default=True)
 
 parser.add_argument('--md', type=int, default=5)
-parser.add_argument('--mcw', type=int, default=1)
+parser.add_argument('--mcw', type=int, default=500)
 parser.add_argument('--gamma', type=float, default=0.)
-parser.add_argument('--csb', type=float, default=0.8)
-parser.add_argument('--ss', type=float, default=0.95)
-parser.add_argument('--rl', type=float, default=40)
-parser.add_argument('--ra', type=float, default=10)
+parser.add_argument('--csb', type=float, default=0.7)
+parser.add_argument('--ss', type=float, default=0.8)
+parser.add_argument('--rl', type=float, default=100)
+parser.add_argument('--ra', type=float, default=700)
 parser.add_argument('--spw', type=float, default=1)
 parser.add_argument('--lr', type=float, default=0.1)
 
@@ -170,9 +172,16 @@ if args.probs == 'all':
             f.close()
             
 if args.probs == 'none':
-    cache_path = f'/root/autodl-tmp/xingmei/RecSys23/data/preprocessed_trn_val_tst.cache'
+    cache_path = '/root/autodl-tmp/xingmei/RecSys23/data/preprocessed_trn_val_tst.cache'
+    path = '/root/autodl-tmp/xingmei/RecSys23/data/preprocessed_trn_val_tst.csv'
+    ec = True
+    ft = ['q']+['c']*37+['q']+['c']*14+['q']*2+['c']*4+['q']*7+['c']*9
+    if args.weekday:
+        cache_path = f'/root/autodl-tmp/xingmei/RecSys23/data/preprocessed_trn_val_tst_weekday.cache'
+        path = '/root/autodl-tmp/xingmei/RecSys23/data/preprocessed_trn_val_tst_with_weekday.csv'
+        ft = ['c']+['q']+['c']*37+['q']+['c']*14+['q']*2+['c']*4+['q']*7+['c']*9
     if not os.path.exists(cache_path):
-        df = pd.read_csv(f'/root/autodl-tmp/xingmei/RecSys23/data/preprocessed_trn_val_tst.csv', sep='\t')
+        df = pd.read_csv(path, sep='\t')
         with open(cache_path, 'wb') as f:
             pickle.dump(df, f)
             f.close()
@@ -180,8 +189,6 @@ if args.probs == 'none':
         with open(cache_path, 'rb') as f:
             df = pickle.load(f)
             f.close()
-    ec = True
-    ft = ['q']+['c']*37+['q']+['c']*14+['q']*2+['c']*4+['q']*7+['c']*9
 
 
 if args.probs == 'all':
@@ -216,71 +223,59 @@ if args.probs == 'all' or args.probs == 'install':
     ft = ['q']*len(feats)
 
 if args.train:
-    trn_df = df[0:3387880+97972]
-    # trn_df = df[3387880:3387880+97972]
-    # trn_df.reset_index(inplace=True)
-    if args.fold is not None:
-        sum_score = 0
-        kf = KFold(n_splits=args.fold, shuffle=True, random_state=args.seed)
-        for i, (trn_idx, tst_idx) in enumerate(kf.split(trn_df)):
-            logger.info(f'Fold {i+1}: trn size {len(trn_idx)} tst size {len(tst_idx)}')
-            trn_X, trn_y = trn_df.loc[trn_idx, feats], trn_df.loc[trn_idx, 'is_installed']
-            tst_X, tst_y = trn_df.loc[tst_idx, feats], trn_df.loc[tst_idx, 'is_installed']
-            trn_d = xgb.DMatrix(trn_X, trn_y, enable_categorical=ec, 
-                                feature_names=list(trn_X.columns), 
-                                feature_types=ft)
-            tst_d = xgb.DMatrix(tst_X, tst_y, enable_categorical=ec,
-                                feature_names=list(trn_X.columns), 
-                                feature_types=ft)
-            model = xgb.train(
-                        params, 
-                        trn_d, 
-                        evals=[(trn_d,'train'), (tst_d,'eval')],
-                        num_boost_round=10000, 
-                        early_stopping_rounds=200,
-                        verbose_eval=100
-                    )
-            
-            logger.info(f'Best score: {model.best_score} at iteration {model.best_iteration}')
-            sum_score += model.best_score
-        logger.info(f'Avg score {sum_score / args.fold} | Log time {log_time}')
-    else:
-        trn_X, trn_y = trn_df[feats], trn_df['is_installed']
-        trn_d = xgb.DMatrix(trn_X, trn_y, enable_categorical=ec,
-                            feature_names=list(trn_X.columns), 
-                            feature_types=ft)
-        model = xgb.train(
-                    params, 
-                    trn_d, 
-                    evals=[(trn_d,'train')],
-                    num_boost_round=10000, 
-                    early_stopping_rounds=200,
-                    verbose_eval=100
-                )
-        logger.info(f'Best score: {model.best_score} at iteration {model.best_iteration}')
-        if not os.path.exists("./saved/XGBoost"):
-            os.makedirs("./saved/XGBoost")
-        model.save_model(f"./saved/XGBoost/{log_time}.json")
-        logger.info(f'Best score {model.best_score} | Log time {log_time}')
+    trn_df = df[0:3387880]
+    val_df = df[3387880:3387880+97972]
+    # val_df.reset_index(inplace=True)
+    trn_X, trn_y = trn_df[feats], trn_df['is_installed']
+    val_X, val_y = val_df[feats], val_df['is_installed']
+    trn_d = xgb.DMatrix(trn_X, trn_y, enable_categorical=ec,
+                        feature_names=list(trn_X.columns), 
+                        feature_types=ft)
+    val_d = xgb.DMatrix(val_X, val_y, enable_categorical=ec,
+                        feature_names=list(val_X.columns), 
+                        feature_types=ft)
+    model = xgb.train(
+                params, 
+                trn_d, 
+                evals=[(trn_d,'train'), (val_d,'eval')],
+                num_boost_round=10000, 
+                early_stopping_rounds=200,
+                verbose_eval=100
+            )
+    logger.info(f'Best score: {model.best_score} at iteration {model.best_iteration} | Log time {log_time}')
+    if not os.path.exists("./saved/XGBoost"):
+        os.makedirs("./saved/XGBoost")
+    model.save_model(f"./saved/XGBoost/{log_time}.json")
     
 if args.infer:
     if args.train:
         save_time = log_time
     else:
         model = xgb.Booster(params)
-        save_time = '2023-06-18-16-34-37'
+        save_time = ''
         model.load_model("./saved/XGBoost/"+save_time+".json")
-    tst_X = df.loc[3387880+97972:, feats]
-    tst_d = xgb.DMatrix(tst_X, enable_categorical=ec,
-                        feature_names=list(tst_X.columns), 
-                        feature_types=ft)
-    preds = model.predict(tst_d)
-    rowid = pd.read_csv('/root/autodl-tmp/yankai/data/data/tst_rowid.csv')['f_0'].to_list()
-    pred_df = pd.DataFrame({
-                        'RowId': rowid, 
-                        'is_clicked': 0, 
-                        'is_installed': preds
-                    })
+        
     if not os.path.exists("./predictions/XGBoost"):
-            os.makedirs("./predictions/XGBoost")
-    pred_df.to_csv(f'./predictions/XGBoost/{save_time}.csv', sep='\t', index=False)
+        os.makedirs("./predictions/XGBoost")
+        
+    if not args.infer_all:
+        tst_X = df.loc[3387880+97972:, feats]
+        tst_d = xgb.DMatrix(tst_X, enable_categorical=ec,
+                            feature_names=list(tst_X.columns), 
+                            feature_types=ft)
+        preds = model.predict(tst_d)
+        rowid = pd.read_csv('/root/autodl-tmp/yankai/data/data/tst_rowid.csv')['f_0'].to_list()
+        pred_df = pd.DataFrame({
+                            'RowId': rowid, 
+                            'is_clicked': 0, 
+                            'is_installed': preds
+                        })
+        pred_df.to_csv(f'./predictions/XGBoost/{save_time}.csv', sep='\t', index=False)
+    else:
+        X = df[feats]
+        d = xgb.DMatrix(X, enable_categorical=ec,
+                        feature_names=list(X.columns), 
+                        feature_types=ft)
+        preds = model.predict(d)
+        pred_df = pd.DataFrame({'is_installed_prob': preds})
+        pred_df.to_csv(f'./predictions/XGBoost/{save_time}is_installed.csv', sep='\t', index=False)

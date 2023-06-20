@@ -4,6 +4,7 @@ from typing import *
 import torch
 import torch.nn.functional as F
 import torchmetrics.functional as M
+import sklearn.metrics as metrics
 
 
 def recall(pred, target, k_or_thres):
@@ -165,7 +166,7 @@ def hits(pred, target, k):
     return torch.any(pred[:, :k] > 0, dim=-1).float().mean()
 
 
-def logloss(pred, target):
+def logloss(pred, target, eps=1e-7):
     r"""Calculate the log loss (log cross entropy).
 
     Args:
@@ -178,6 +179,9 @@ def logloss(pred, target):
         torch.FloatTensor: a 0-dimensional tensor.
     """
     if pred.dim() == target.dim():
+        # target = torch.where(target < 1 - eps, target, 1 - eps)
+        # target = torch.where(target > eps, target, eps)
+        # # target = max(eps, min(1 - eps, target))
         return F.binary_cross_entropy_with_logits(pred, target.float())
     else:
         return F.cross_entropy(pred, target)
