@@ -22,10 +22,7 @@ def run(model: str, dataset: str, fine_tune: bool, model_config: Dict=None, data
     if kwargs is not None:
         model_conf = deep_update(model_conf, kwargs)
 
-    if fine_tune:
-        log_path = time.strftime(f"{model}/finetune/%Y-%m-%d-%H-%M-%S.log", time.localtime())
-    else:
-        log_path = time.strftime(f"{model}/{dataset}/%Y-%m-%d-%H-%M-%S.log", time.localtime())
+    log_path = time.strftime(f"{model}/{dataset}/%Y-%m-%d-%H-%M-%S.log", time.localtime())
     logger = get_logger(log_path)
     torch.set_num_threads(model_conf['train']['num_threads'])
 
@@ -53,8 +50,13 @@ def run(model: str, dataset: str, fine_tune: bool, model_config: Dict=None, data
         else:
             raise TypeError(f"expecting `data_config` to be Dict, while get {type(data_config)} instead.")
 
+    if fine_tune and model_conf['data']['split_ratio'] is None:
+        model_conf['data']['split_ratio'] = [1016364, 29392, 0]
+    elif (not fine_tune) and model_conf['data']['split_ratio'] is None:
+        model_conf['data']['split_ratio'] = [3387880, 97972, 160973]
+        
     data_conf.update(model_conf['data'])    # update model-specified config
-
+        
     datasets = dataset_class(name=dataset, config=data_conf).build(**model_conf['data'])
     logger.info(f"{datasets[0]}")
     logger.info(f"\n{set_color('Model Config', 'green')}: \n\n" + color_dict_normal(model_conf, False))
