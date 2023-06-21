@@ -1,5 +1,5 @@
 model:
-  hidden_dims: [256, 256, 256]
+  hidden_dims: [128, 128]
   activation: relu
   dropout: 0.5
   batch_norm: True
@@ -11,4 +11,5 @@ model:
   embed_dim: 64
 
 train:
+  scheduler: exponential
   weight_decay: 1e-6
