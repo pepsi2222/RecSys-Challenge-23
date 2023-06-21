@@ -54,6 +54,8 @@ def run(model: str, dataset: str, fine_tune: bool, model_config: Dict=None, data
         model_conf['data']['split_ratio'] = [1016364, 29392, 0]
     elif (not fine_tune) and model_conf['data']['split_ratio'] is None:
         model_conf['data']['split_ratio'] = [3387880, 97972, 160973]
+    elif '_536066' in dataset and model_conf['data']['split_ratio'] is None:
+        model_conf['data']['split_ratio'] = [3308553, 177299, 160973]
         
     data_conf.update(model_conf['data'])    # update model-specified config
         

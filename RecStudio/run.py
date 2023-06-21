@@ -5,15 +5,16 @@ import os
 # task = 'click' 
 task = 'install'
 with_weekday = True
-fine_tune = True
-model = 'PLE'
+fine_tune = False
+model = 'LR3'
+val536066 = True
 
 
 # ckpt_name = '2023-05-20-22-31-04.ckpt'
 # ckpt_name = '2023-06-15-23-25-04.ckpt'
 
 if __name__ == '__main__':
-    parser = get_default_parser(task, with_weekday, fine_tune, model)
+    parser = get_default_parser(task, with_weekday, fine_tune, model, val536066)
     args, command_line_args = parser.parse_known_args()
     parser = add_model_arguments(parser, args.model)
     command_line_conf = parser2nested_dict(parser, command_line_args)

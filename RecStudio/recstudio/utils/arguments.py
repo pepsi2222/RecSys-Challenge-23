@@ -61,7 +61,7 @@ def dict2arguments(config: Dict, parser: ArgumentParser) -> ArgumentParser:
     return parser
 
 
-def get_default_parser(task, with_weekday, fine_tune, model) -> ArgumentParser:
+def get_default_parser(task, with_weekday, fine_tune, model, val536066) -> ArgumentParser:
     if model in ['HardShare', 'MMoE', 'PLE', 'AITM']:
         task = 'multi'
         
@@ -75,7 +75,12 @@ def get_default_parser(task, with_weekday, fine_tune, model) -> ArgumentParser:
     else:
         ww = ''
         
-    dataset = task + ft + ww
+    if val536066 == True:
+        v = '_536066'
+    else:
+        v = ''
+        
+    dataset = task + ft + ww + v
     
     parser = ArgumentParser(
         prog='RecStudio',
