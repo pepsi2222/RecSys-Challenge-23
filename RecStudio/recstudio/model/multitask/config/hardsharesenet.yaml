@@ -1,14 +1,18 @@
 model:
-  top_mlp_layer: [128, 128]
+  top_mlp_layer: [128]
   top_activation: relu
   top_dropout: 0
   top_batch_norm: False
-  bottom_mlp_layer: [128, 128]
+  bottom_mlp_layer: [128, 64]
   bottom_activation: relu
   bottom_dropout: 0
   bottom_batch_norm: False
 
-  embed_dim: 64
+  reduction_ratio: 3
+  excitation_activation: relu
+
+  embed_dim: 60
+
   weights: [1.0, 20.0]
 
 train:

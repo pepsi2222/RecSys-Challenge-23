@@ -1,0 +1,14 @@
+model:
+  hidden_dims: [256, 256, 256]
+  activation: relu
+  dropout: 0.5
+  batch_norm: True
+  layer_norm: True
+
+  reduction_ratio: 3
+  excitation_activation: relu
+
+  embed_dim: 64
+
+train:
+  weight_decay: 1e-6
