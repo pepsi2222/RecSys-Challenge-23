@@ -96,25 +96,78 @@ def color_dict_normal(dict_, keep=True,):
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--probs', type=str, default='none', choices=['install', 'all', 'none'])
+parser.add_argument('--probs', type=str, default='install', choices=['install', 'all', 'none'])
 parser.add_argument('--seed', type=int, default=2023)
 
-parser.add_argument('--gpu', type=str, default='2')
-parser.add_argument('--train', type=bool, default=True)
+parser.add_argument('--gpu', type=str, default='6')
+parser.add_argument('--train', type=bool, default=False)
 parser.add_argument('--infer', type=bool, default=True)
 parser.add_argument('--infer_all', type=bool, default=False)
 
 parser.add_argument('--weekday', type=bool, default=True)
 
-parser.add_argument('--md', type=int, default=5)
-parser.add_argument('--mcw', type=int, default=500)
+# 640
+parser.add_argument('--md', type=int, default=2)
+parser.add_argument('--mcw', type=int, default=2000)
 parser.add_argument('--gamma', type=float, default=0.)
-parser.add_argument('--csb', type=float, default=0.7)
+parser.add_argument('--csb', type=float, default=1)
 parser.add_argument('--ss', type=float, default=0.8)
-parser.add_argument('--rl', type=float, default=100)
-parser.add_argument('--ra', type=float, default=700)
+parser.add_argument('--rl', type=float, default=10)
+parser.add_argument('--ra', type=float, default=0.)
 parser.add_argument('--spw', type=float, default=1)
 parser.add_argument('--lr', type=float, default=0.1)
+
+# 650
+# parser.add_argument('--md', type=int, default=3)
+# parser.add_argument('--mcw', type=int, default=3000)
+# parser.add_argument('--gamma', type=float, default=0.)
+# parser.add_argument('--csb', type=float, default=0.9)
+# parser.add_argument('--ss', type=float, default=0.7)
+# parser.add_argument('--rl', type=float, default=10)
+# parser.add_argument('--ra', type=float, default=0.)
+# parser.add_argument('--spw', type=float, default=1)
+# parser.add_argument('--lr', type=float, default=0.1)
+
+# all
+# parser.add_argument('--md', type=int, default=3)
+# parser.add_argument('--mcw', type=int, default=2000)
+# parser.add_argument('--gamma', type=float, default=0.)
+# parser.add_argument('--csb', type=float, default=0.2)
+# parser.add_argument('--ss', type=float, default=0.7)
+# parser.add_argument('--rl', type=float, default=10)
+# parser.add_argument('--ra', type=float, default=0.01)
+# parser.add_argument('--spw', type=float, default=1)
+# parser.add_argument('--lr', type=float, default=0.1)
+
+# parser.add_argument('--md', type=int, default=9)
+# parser.add_argument('--mcw', type=int, default=1000)
+# parser.add_argument('--gamma', type=float, default=0.)
+# parser.add_argument('--csb', type=float, default=0.7)
+# parser.add_argument('--ss', type=float, default=0.8)
+# parser.add_argument('--rl', type=float, default=100)
+# parser.add_argument('--ra', type=float, default=0.01)
+# parser.add_argument('--spw', type=float, default=1)
+# parser.add_argument('--lr', type=float, default=0.1)
+
+# parser.add_argument('--md', type=int, default=3)
+# parser.add_argument('--mcw', type=int, default=1000)
+# parser.add_argument('--gamma', type=float, default=0.5)
+# parser.add_argument('--csb', type=float, default=0.7)
+# parser.add_argument('--ss', type=float, default=0.8)
+# parser.add_argument('--rl', type=float, default=10000)
+# parser.add_argument('--ra', type=float, default=0.001)
+# parser.add_argument('--spw', type=float, default=1)
+# parser.add_argument('--lr', type=float, default=0.1)
+
+# parser.add_argument('--md', type=int, default=5)
+# parser.add_argument('--mcw', type=int, default=1000)
+# parser.add_argument('--gamma', type=float, default=0.5)
+# parser.add_argument('--csb', type=float, default=0.5)
+# parser.add_argument('--ss', type=float, default=0.9)
+# parser.add_argument('--rl', type=float, default=10)
+# parser.add_argument('--ra', type=float, default=0.001)
+# parser.add_argument('--spw', type=float, default=1)
+# parser.add_argument('--lr', type=float, default=0.1)
 
 args = parser.parse_args() 
 
@@ -139,7 +192,7 @@ params = {
 }
 if args.train:
     log_time = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())
-    log_path = f"./log/XGBoost/{args.probs}/{log_time}.log"
+    log_path = f"./log/XGBoost/{args.probs}-650/{log_time}.log"
     logger = get_logger(log_path)
     logger.info(f'log saved in {log_path}')
     sys.stdout.write = logger.info
@@ -147,9 +200,9 @@ if args.train:
     logger.info('Loading csv')
     
 if args.probs == 'all' or args.probs == 'install':
-    cache_path = f'/root/autodl-tmp/xingmei/RecSys23/data/install_probs_trn_val_tst.cache'
+    cache_path = '/root/autodl-tmp/xingmei/RecSys23/data/install_probs_tvt_0_650.cache'
     if not os.path.exists(cache_path):
-        df = pd.read_csv(f'/root/autodl-tmp/xingmei/RecSys23/data/install_probs_trn_val_tst.csv', sep='\t')
+        df = pd.read_csv('/root/autodl-tmp/xingmei/RecSys23/data/install_probs_tvt_0_650.csv', sep='\t')
         with open(cache_path, 'wb') as f:
             pickle.dump(df, f)
             f.close()
@@ -197,35 +250,11 @@ if args.probs == 'all':
 feats = list(df.columns)
 feats.remove('is_installed')
 if args.probs == 'all' or args.probs == 'install':
-    for i in feats:
-        if i not in [
-                        'p_install_PLE', 
-                        'p_install_MMoE', 
-                        'p_install_IFM',
-                        'p_install_FwFM',
-                        'p_install_DCNv2']:
-            # [
-            #     'p_install_LorentzFM', 
-            #     'p_install_DeepFM', 
-            #     'p_install_EDCN', 
-            #     'p_install_FM', 
-            #     'p_install_LR', 
-            #     'p_install_PNN', 
-            #     'p_install_xDeepFM',
-            #     'p_install_DeepCrossing',
-            #     'p_install_HardShare',
-            #     'p_install_WideDeep',
-            #     'p_install_NFM',
-            #     'p_install_InterHAT',
-            #     'p_install_AITM'
-            # ]:
-            feats.remove(i)
     ft = ['q']*len(feats)
 
 if args.train:
     trn_df = df[0:3387880]
     val_df = df[3387880:3387880+97972]
-    # val_df.reset_index(inplace=True)
     trn_X, trn_y = trn_df[feats], trn_df['is_installed']
     val_X, val_y = val_df[feats], val_df['is_installed']
     trn_d = xgb.DMatrix(trn_X, trn_y, enable_categorical=ec,
@@ -251,8 +280,8 @@ if args.infer:
     if args.train:
         save_time = log_time
     else:
-        model = xgb.Booster(params)
-        save_time = ''
+        model = xgb.Booster()
+        save_time = '2023-06-21-22-11-26'
         model.load_model("./saved/XGBoost/"+save_time+".json")
         
     if not os.path.exists("./predictions/XGBoost"):
