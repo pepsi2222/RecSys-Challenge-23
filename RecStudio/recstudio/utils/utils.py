@@ -347,6 +347,7 @@ def seed_everything(seed: Optional[int] = None, workers: bool = False) -> int:
     np.random.seed(seed)
     torch.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
+    torch.backends.cudnn.deterministic = True
 
     os.environ["PL_SEED_WORKERS"] = f"{int(workers)}"
 
