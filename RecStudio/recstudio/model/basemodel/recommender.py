@@ -249,7 +249,9 @@ class Recommender(torch.nn.Module, abc.ABC):
             return callbacks.EarlyStopping(self, self.val_metric, dataset_name, save_dir=save_dir, \
                 patience=self.config['train']['early_stop_patience'], mode=self.config['train']['early_stop_mode'])
         else:
-            return callbacks.SaveLastCallback(self, dataset_name, save_dir=save_dir)
+            # return callbacks.SaveLastCallback(self, dataset_name, save_dir=save_dir)
+            return callbacks.EarlyStopping(self, 'train_loss_0', dataset_name, save_dir=save_dir, \
+                patience=self.config['train']['early_stop_patience'], mode=self.config['train']['early_stop_mode'], delta=self.config['train']['early_stop_delta'])
 
     def current_epoch_trainloaders(self, nepoch) -> Tuple:
         r"""

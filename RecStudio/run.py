@@ -2,12 +2,14 @@ from recstudio.utils import *
 from recstudio import quickstart
 import os
 
-# task = 'click' 
 task = 'install'
 with_weekday = True
+val536066 = False
+
 fine_tune = False
-model = 'LR3'
-val536066 = True
+model = 'FM'
+without_val = True
+early_stop_delta = 0.02
 
 
 # ckpt_name = '2023-05-20-22-31-04.ckpt'
@@ -26,6 +28,6 @@ if __name__ == '__main__':
     # else:
     #     sh = 'RecStudio/yaml_adjust.sh'
     # os.system(f"bash {sh} {model_class.__name__ in ['HardShare', 'MMoE', 'PLE', 'AITM']} {task} START {fine_tune}")
-    quickstart.run(args.model, args.dataset, fine_tune, model_config=model_conf, data_config_path=args.data_config_path)
+    quickstart.run(args.model, args.dataset, without_val, model_config=model_conf, data_config_path=args.data_config_path, early_stop_delta=early_stop_delta)
     # quickstart.pred(args.model, args.dataset, ckpt_name, model_config=model_conf, data_config_path=args.data_config_path)
     # os.system(f"bash {sh} {model_class.__name__ in ['HardShare', 'MMoE', 'PLE', 'AITM']} {task} END {fine_tune}")

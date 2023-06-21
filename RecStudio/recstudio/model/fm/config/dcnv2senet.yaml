@@ -1,0 +1,19 @@
+model:
+  combination: stacked
+  low_rank: ~
+  num_experts: 3
+  num_layers: 4
+  embed_dim: 50
+  mlp_layer: [256,128]
+  activation: relu
+  cross_activation: tanh
+  dropout: 0
+  batch_norm: True
+
+  reduction_ratio: 3
+  excitation_activation: relu
+
+train:
+  scheduler: exponential
+  learning_rate: 1e-3
+  weight_decay: 1e-6

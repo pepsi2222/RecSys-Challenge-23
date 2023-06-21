@@ -39,6 +39,7 @@ train:
 
     early_stop_mode: min
     early_stop_patience: 10
+    early_stop_delta: 0.02
 
     epochs: 1000
     gpu: [3]

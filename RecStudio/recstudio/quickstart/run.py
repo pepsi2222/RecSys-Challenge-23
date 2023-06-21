@@ -4,7 +4,7 @@ from recstudio.utils import *
 import logging
 from recstudio import LOG_DIR
 
-def run(model: str, dataset: str, fine_tune: bool, model_config: Dict=None, data_config: Dict=None, model_config_path: str=None, data_config_path: str=None, verbose=True, **kwargs):
+def run(model: str, dataset: str, without_val: bool, model_config: Dict=None, data_config: Dict=None, model_config_path: str=None, data_config_path: str=None, early_stop_delta=0, verbose=True, **kwargs):
     model_class, model_conf = get_model(model)
 
     if model_config_path is not None:
@@ -30,6 +30,7 @@ def run(model: str, dataset: str, fine_tune: bool, model_config: Dict=None, data
         import logging
         logger.setLevel(logging.ERROR)
 
+    model_conf['train']['early_stop_delta'] = early_stop_delta
     logger.info("Log saved in {}.".format(os.path.abspath(os.path.join(LOG_DIR, log_path))))
     model = model_class(model_conf)
     dataset_class = model_class._get_dataset_class()
@@ -50,19 +51,31 @@ def run(model: str, dataset: str, fine_tune: bool, model_config: Dict=None, data
         else:
             raise TypeError(f"expecting `data_config` to be Dict, while get {type(data_config)} instead.")
 
-    if fine_tune and model_conf['data']['split_ratio'] is None:
-        model_conf['data']['split_ratio'] = [1016364, 29392, 0]
-    elif (not fine_tune) and model_conf['data']['split_ratio'] is None:
-        model_conf['data']['split_ratio'] = [3387880, 97972, 160973]
-    elif '_536066' in dataset and model_conf['data']['split_ratio'] is None:
-        model_conf['data']['split_ratio'] = [3308553, 177299, 160973]
+    
+    if model_conf['data']['split_ratio'] is None:
+        if 'finetune' in dataset:
+            model_conf['data']['split_ratio'] = [1016364, 29392, 0]
+        else:
+            if without_val:
+                model_conf['data']['split_ratio'] = [3308553 + 177299, 0, 160973]
+            elif '_536066' in dataset:
+                model_conf['data']['split_ratio'] = [3308553, 177299, 160973]
+            else:
+                model_conf['data']['split_ratio'] = [3387880, 97972, 160973]
+
+        
         
     data_conf.update(model_conf['data'])    # update model-specified config
         
     datasets = dataset_class(name=dataset, config=data_conf).build(**model_conf['data'])
     logger.info(f"{datasets[0]}")
     logger.info(f"\n{set_color('Model Config', 'green')}: \n\n" + color_dict_normal(model_conf, False))
-    model.fit(*datasets[:2], run_mode='light')
+    
+    if len(datasets[1].data_index) > 0:
+        model.fit(*datasets[:2], run_mode='light')
+    else:
+        model.fit(datasets[0], run_mode='light')
+        
     if len(datasets[-1].data_index) > 0:
         save_dir = os.path.join('./predictions', f'{model.__class__.__name__}')
         save_path = os.path.join(save_dir, time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()) + f'{str(model.frating)}.csv')
@@ -70,8 +83,9 @@ def run(model: str, dataset: str, fine_tune: bool, model_config: Dict=None, data
         train_pred_df = model.predict(datasets[0], dataset='train')
         train_pred_df.to_csv(save_path, sep='\t', index=False)
         
-        val_pred_df = model.predict(datasets[1], dataset='val')
-        val_pred_df.to_csv(save_path, sep='\t', index=False, mode='a', header=0)
+        if len(datasets[1].data_index) > 0:
+            val_pred_df = model.predict(datasets[1], dataset='val')
+            val_pred_df.to_csv(save_path, sep='\t', index=False, mode='a', header=0)
         
         tst_pred_df = model.predict(datasets[-1], dataset='val')
         tst_pred_df.to_csv(save_path, sep='\t', index=False, mode='a', header=0)
@@ -130,19 +144,6 @@ def pred(model: str, dataset: str, ckpt_name: str, model_config: Dict=None, data
     datasets = dataset_class(name=dataset, config=data_conf).build(**model_conf['data'])
 
     model._init_model(datasets[0])
-
-    # datasets[-1].drop_feat(keep_fields=model.fields)
-    # pred_loader = datasets[-1].eval_loader(batch_size=128)
-    # model.load_checkpoint("/root/autodl-tmp/yankai/Sharechat-RecSys-Challenge-23/saved/DCNv2/recsys/2023-05-04-23-29-33.ckpt")      
-    # model.eval()
-    # outputs = model.predict_epoch(pred_loader)
-    # pred_df = model.predict_epoch_end(outputs)
-
-    # save_dir = os.path.join('./predictions', f'{model.__class__.__name__}')
-    # if not os.path.exists(save_dir):
-    #     os.makedirs(save_dir)
-    # save_path = os.path.join(save_dir, time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()) + f'{str(model.frating)}.csv')
-    # pred_df.to_csv(save_path, sep='\t', index=False)
     
     model.ckpt_path = f'{model.__class__.__name__}/{dataset}/{ckpt_name}'
     save_dir = os.path.join('./predictions', f'{model.__class__.__name__}')
@@ -151,8 +152,9 @@ def pred(model: str, dataset: str, ckpt_name: str, model_config: Dict=None, data
     train_pred_df = model.predict(datasets[0], dataset='train')
     train_pred_df.to_csv(save_path, sep='\t', index=False)
     
-    val_pred_df = model.predict(datasets[1], dataset='val')
-    val_pred_df.to_csv(save_path, sep='\t', index=False, mode='a', header=0)
+    if len(datasets[1].data_index) > 0:
+        val_pred_df = model.predict(datasets[1], dataset='val')
+        val_pred_df.to_csv(save_path, sep='\t', index=False, mode='a', header=0)
     
     test_pred_df = model.predict(datasets[-1], dataset='val')
     test_pred_df.to_csv(save_path, sep='\t', index=False, mode='a', header=0)
