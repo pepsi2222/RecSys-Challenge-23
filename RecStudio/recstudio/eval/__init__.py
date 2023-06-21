@@ -166,7 +166,7 @@ def hits(pred, target, k):
     return torch.any(pred[:, :k] > 0, dim=-1).float().mean()
 
 
-def logloss(pred, target, eps=1e-7):
+def logloss(pred, target):
     r"""Calculate the log loss (log cross entropy).
 
     Args:
@@ -183,6 +183,7 @@ def logloss(pred, target, eps=1e-7):
         # target = torch.where(target > eps, target, eps)
         # # target = max(eps, min(1 - eps, target))
         return F.binary_cross_entropy_with_logits(pred, target.float())
+        # return F.binary_cross_entropy(pred, target.float())
     else:
         return F.cross_entropy(pred, target)
 
