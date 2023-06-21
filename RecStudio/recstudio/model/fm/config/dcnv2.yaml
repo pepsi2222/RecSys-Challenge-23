@@ -7,7 +7,7 @@ model:
   mlp_layer: [256,256,256]
   activation: relu
   cross_activation: tanh
-  dropout: 0
+  dropout: 0.1
   batch_norm: True
 
 train:

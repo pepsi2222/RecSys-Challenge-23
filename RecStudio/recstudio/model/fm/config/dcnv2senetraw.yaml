@@ -11,7 +11,7 @@ model:
   batch_norm: True
 
   reduction_ratio: 3
-  excitation_activation: sigmoid
+  excitation_activation: tanh
 
 train:
   scheduler: exponential

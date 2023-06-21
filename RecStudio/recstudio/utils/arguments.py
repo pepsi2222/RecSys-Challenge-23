@@ -62,7 +62,10 @@ def dict2arguments(config: Dict, parser: ArgumentParser) -> ArgumentParser:
 
 
 def get_default_parser(task, with_weekday, fine_tune, model, val536066) -> ArgumentParser:
-    if model in ['HardShare', 'MMoE', 'PLE', 'AITM']:
+    if 'hardshare' in model.lower() or \
+        'mmoe' in model.lower() or \
+        'ple' in model.lower() or \
+        'aitm' in model.lower():
         task = 'multi'
         
     if fine_tune == True:
