@@ -56,7 +56,9 @@ class PLEMLP(BaseRanker):
         extraction_out = self.extraction_layers([emb] * (len(self.frating) + 1))
         score = defaultdict(dict)
         for i, (r, tower) in enumerate(self.towers.items()):
-            score[r]['score'] = tower(extraction_out[i]).squeeze(-1) + deep_score
+            score[r]['score'] = tower(extraction_out[i]).squeeze(-1)
+            if r == 'is_installed':
+                score[r]['score'] += deep_score
         return score 
 
     def _get_loss_func(self):
