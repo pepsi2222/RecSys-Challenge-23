@@ -4,7 +4,8 @@ from recstudio.utils import *
 import logging
 from recstudio import LOG_DIR
 
-def run(model: str, dataset: str, without_val: bool, model_config: Dict=None, data_config: Dict=None, model_config_path: str=None, data_config_path: str=None, early_stop_delta=0, verbose=True, **kwargs):
+def run(model: str, dataset: str, without_val: bool, model_config: Dict=None, data_config: Dict=None, model_config_path: str=None, data_config_path: str=None, 
+        early_stop_delta=0, early_stop_patience=10, verbose=True, **kwargs):
     model_class, model_conf = get_model(model)
 
     if model_config_path is not None:
@@ -30,7 +31,10 @@ def run(model: str, dataset: str, without_val: bool, model_config: Dict=None, da
         import logging
         logger.setLevel(logging.ERROR)
 
-    model_conf['train']['early_stop_delta'] = early_stop_delta
+    if without_val:
+        model_conf['train']['early_stop_delta'] = early_stop_delta
+        model_conf['train']['early_stop_patience'] = early_stop_patience
+        
     logger.info("Log saved in {}.".format(os.path.abspath(os.path.join(LOG_DIR, log_path))))
     model = model_class(model_conf)
     dataset_class = model_class._get_dataset_class()

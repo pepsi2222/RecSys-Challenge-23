@@ -9,7 +9,10 @@ val536066 = False
 fine_tune = False
 model = 'FM'
 without_val = True
+
+# only work when without_val
 early_stop_delta = 0.02
+early_stop_patience = 2
 
 
 # ckpt_name = '2023-05-20-22-31-04.ckpt'
@@ -28,6 +31,7 @@ if __name__ == '__main__':
     # else:
     #     sh = 'RecStudio/yaml_adjust.sh'
     # os.system(f"bash {sh} {model_class.__name__ in ['HardShare', 'MMoE', 'PLE', 'AITM']} {task} START {fine_tune}")
-    quickstart.run(args.model, args.dataset, without_val, model_config=model_conf, data_config_path=args.data_config_path, early_stop_delta=early_stop_delta)
+    quickstart.run(args.model, args.dataset, without_val, model_config=model_conf, data_config_path=args.data_config_path, 
+                   early_stop_delta=early_stop_delta, early_stop_patience=early_stop_patience)
     # quickstart.pred(args.model, args.dataset, ckpt_name, model_config=model_conf, data_config_path=args.data_config_path)
     # os.system(f"bash {sh} {model_class.__name__ in ['HardShare', 'MMoE', 'PLE', 'AITM']} {task} END {fine_tune}")
