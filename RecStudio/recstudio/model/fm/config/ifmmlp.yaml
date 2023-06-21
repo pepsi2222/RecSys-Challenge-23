@@ -1,0 +1,8 @@
+model:
+  mlp_layer: [256, 256, 256]
+  activation: relu
+  dropout: 0
+  batch_norm: False
+
+  deep_mlp_layer: [256, 128]
+  deep_dropout: 0.3

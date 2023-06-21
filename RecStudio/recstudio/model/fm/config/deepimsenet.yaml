@@ -1,0 +1,14 @@
+model:
+  order: 5
+  deep: True
+  mlp_layer: [512,256]
+  activation: relu
+  dropout: 0
+
+  reduction_ratio: 3
+  excitation_activation: relu
+
+  embed_dim: 64
+
+train:
+  weight_decay: 0
