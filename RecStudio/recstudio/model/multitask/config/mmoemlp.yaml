@@ -21,4 +21,4 @@ model:
   dropout: 0.3
 
 train:
-  weight_decay: 1e-5
+  weight_decay: 1e-6

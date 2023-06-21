@@ -47,9 +47,9 @@ class MMoEMLP(BaseRanker):
                         })
         
         self.mlp = MLPModule(
-                        [self.embedding.num_features*self.embed_dim]+model_config['deep_mlp_layer']+[1],
+                        [self.embedding.num_features*self.embed_dim]+model_config['mlp_layer']+[1],
                         activation_func = model_config['activation'],
-                        dropout = model_config['deep_dropout'],
+                        dropout = model_config['dropout'],
                         batch_norm = model_config['batch_norm'],
                         last_activation = False, last_bn=False)
             
