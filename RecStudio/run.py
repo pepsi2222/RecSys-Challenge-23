@@ -7,8 +7,9 @@ with_weekday = True
 val536066 = False
 
 fine_tune = False
-model = 'FM'
-without_val = True
+model = 'PPNet'
+without_val = False
+filtered = True
 
 # only work when without_val
 early_stop_delta = 0.02
@@ -19,7 +20,7 @@ early_stop_patience = 2
 # ckpt_name = '2023-06-15-23-25-04.ckpt'
 
 if __name__ == '__main__':
-    parser = get_default_parser(task, with_weekday, fine_tune, model, val536066)
+    parser = get_default_parser(task, with_weekday, fine_tune, model, val536066, filtered)
     args, command_line_args = parser.parse_known_args()
     parser = add_model_arguments(parser, args.model)
     command_line_conf = parser2nested_dict(parser, command_line_args)

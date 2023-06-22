@@ -64,6 +64,8 @@ def run(model: str, dataset: str, without_val: bool, model_config: Dict=None, da
                 model_conf['data']['split_ratio'] = [3308553 + 177299, 0, 160973]
             elif '_536066' in dataset:
                 model_conf['data']['split_ratio'] = [3308553, 177299, 160973]
+            elif 'filtered' in dataset:
+                model_conf['data']['split_ratio'] = [2852886, 93357, 160973]
             else:
                 model_conf['data']['split_ratio'] = [3387880, 97972, 160973]
 
