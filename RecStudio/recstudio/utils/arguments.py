@@ -61,7 +61,7 @@ def dict2arguments(config: Dict, parser: ArgumentParser) -> ArgumentParser:
     return parser
 
 
-def get_default_parser(task, with_weekday, fine_tune, model, val536066, filtered) -> ArgumentParser:
+def get_default_parser(task, with_weekday, fine_tune, model, val536066, filtered, log1p) -> ArgumentParser:
     if 'hardshare' in model.lower() or \
         'mmoe' in model.lower() or \
         'ple' in model.lower() or \
@@ -88,7 +88,10 @@ def get_default_parser(task, with_weekday, fine_tune, model, val536066, filtered
     else:
         f = ''
         
-    dataset = f + task + ft + ww + v
+    if log1p:
+        dataset = task + '_log1p'
+    else:
+        dataset = f + task + ft + ww + v
     
     parser = ArgumentParser(
         prog='RecStudio',

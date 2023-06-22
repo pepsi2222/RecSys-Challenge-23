@@ -5,22 +5,21 @@ import os
 task = 'install'
 with_weekday = True
 val536066 = False
-
 fine_tune = False
-model = 'PPNet'
 without_val = False
-filtered = True
+filtered = False
+log1p = True
+model = 'PPNet'
 
 # only work when without_val
 early_stop_delta = 0.02
 early_stop_patience = 2
 
-
-# ckpt_name = '2023-05-20-22-31-04.ckpt'
-# ckpt_name = '2023-06-15-23-25-04.ckpt'
+# ckpt_name = '2023-06-21-22-32-26.ckpt'
+ckpt_name = '2023-06-22-20-07-42.ckpt'
 
 if __name__ == '__main__':
-    parser = get_default_parser(task, with_weekday, fine_tune, model, val536066, filtered)
+    parser = get_default_parser(task, with_weekday, fine_tune, model, val536066, filtered, log1p)
     args, command_line_args = parser.parse_known_args()
     parser = add_model_arguments(parser, args.model)
     command_line_conf = parser2nested_dict(parser, command_line_args)
