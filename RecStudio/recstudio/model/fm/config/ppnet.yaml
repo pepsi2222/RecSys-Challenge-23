@@ -1,5 +1,5 @@
 model:
-  id_fields: ~
+  id_fields: ['f_6', 'f_15']
   mlp_layer: [256, 256, 256]
   activation: relu
   dropout: 0.5
