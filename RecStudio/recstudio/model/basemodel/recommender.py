@@ -354,12 +354,12 @@ class Recommender(torch.nn.Module, abc.ABC):
                     pred_df = pd.DataFrame({
                                 'RowId': rowid, 
                                 'is_clicked': 0,
-                                'is_installed': outputs
+                                'is_installed': outputs['is_installed']
                             })
                 elif self.frating == 'is_clicked':
                     pred_df = pd.DataFrame({
                                 'RowId': rowid, 
-                                'is_clicked': outputs
+                                'is_clicked': outputs['is_clicked']
                             })
             else:
                 pred_df = pd.DataFrame({

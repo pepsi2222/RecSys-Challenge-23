@@ -156,3 +156,4 @@ predictions0/
 predictions1401/
 predictionsA100/
 log0/
+*.log
