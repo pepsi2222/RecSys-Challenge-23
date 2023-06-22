@@ -24,7 +24,7 @@ class HardShareDCNv2(BaseRanker):
         assert isinstance(self.frating, list), f'Expect rating_field to be a list, but got {self.frating}.'
         self.top_mlp = nn.ModuleDict({
                             r: MLPModule(
-                                [model_config['bottom_mlp_layer'][-1]] + model_config['top_mlp_layer'] + [1],
+                                [self.embedding.num_features * self.embed_dim] + model_config['top_mlp_layer'] + [1],
                                 model_config['top_activation'], 
                                 model_config['top_dropout'],
                                 last_activation=False, 
