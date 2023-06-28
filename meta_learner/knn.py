@@ -1,14 +1,14 @@
-import lightgbm as lgb
+from sklearn.neighbors import KNeighborsClassifier
 import pandas as pd
 import argparse
 import time
-from sklearn.model_selection import KFold
 import os
 import sys
 import logging
 import re
 from collections import OrderedDict
 import pickle
+import sklearn.metrics as M
 
 
 class RemoveColorFilter(logging.Filter):
@@ -99,56 +99,32 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--probs', type=str, default='none', choices=['install', 'all', 'none'])
 parser.add_argument('--seed', type=int, default=2023)
 
-parser.add_argument('--train', type=bool, default=False)
-parser.add_argument('--train_with_val', type=bool, default=False)   # should motify num_boost_round
-nbr = 70
+parser.add_argument('--train', type=bool, default=True)
+parser.add_argument('--train_with_val', type=bool, default=False)   # should motify iterations
+iterations = 250
 
-parser.add_argument('--infer', type=bool, default=True)
-parser.add_argument('--infer_all', type=bool, default=True)
+parser.add_argument('--infer', type=bool, default=False)
+parser.add_argument('--infer_all', type=bool, default=False)
 
 parser.add_argument('--weekday', type=bool, default=True)
 
-parser.add_argument('--md', type=int, default=-1)
-parser.add_argument('--nl', type=int, default=1000)
-parser.add_argument('--mb', type=int, default=100)
-parser.add_argument('--mcs', type=int, default=100)
-parser.add_argument('--l2', type=float, default=100)
-parser.add_argument('--l1', type=float, default=0.1)
-parser.add_argument('--ff', type=float, default=0.6)
-parser.add_argument('--bf', type=float, default=1)
-parser.add_argument('--bfq', type=int, default=100)
-
-parser.add_argument('--lr', type=float, default=0.1)
-
 args = parser.parse_args() 
 
-
 params = {
-    'objective': 'regression',
-    'boosting': 'gbdt',
-    'data_sample_strategy': 'bagging',
-    'metric':['binary_logloss', 'auc'],
-    'seed': args.seed,
-    'max_depth': args.md, 
-    'num_leaves': args.nl,
-    'max_bin': args.mb,
-    'min_child_samples': args.mcs,
-    'lambda_l1': args.l1,
-    'lambda_l2': args.l2,
-    'feature_fraction': args.ff,
-    'bagging_fraction': args.bf,
-    'bagging_freq': args.bfq,
-    'learning_rate': args.lr,
-    'device_type':'cpu',
-    'verbose': -1,
-    'early_stopping_round': 200,
+    'n_neighbors': 5,
+    'weights': 'uniform',
+    'algorithm': 'auto',
+    'leaf_size': 30,
+    'n_jobs': -1
 }
 
 data_dir = '/root/autodl-tmp/xingmei/RecSysChallenge23/data'
 
 if args.train:
     log_time = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())
-    log_path = f"./log/LightGBM/{args.probs}/{log_time}.log"
+    if not os.path.exists('./log/KNN/'):
+        os.makedirs('./log/KNN/')
+    log_path = f"./log/KNN/{args.probs}/{log_time}.log"
     logger = get_logger(log_path)
     logger.info(f'log saved in {log_path}')
     sys.stdout.write = logger.info
@@ -211,59 +187,51 @@ if args.probs == 'all' or args.probs == 'install':
                     ]:
             feats.remove(i)
 
-
 if args.train:
+    model = KNeighborsClassifier(**params)
+    
     if not args.train_with_val:
         trn_df = df[0:3387880]
         val_df = df[3387880:3387880+97972]
         trn_X, trn_y = trn_df[feats], trn_df['is_installed']
         val_X, val_y = val_df[feats], val_df['is_installed']
-        trn_d = lgb.Dataset(trn_X, trn_y, feature_name=list(trn_X.columns))
-        val_d = lgb.Dataset(val_X, val_y, reference=trn_d, feature_name=list(trn_X.columns))
-        model = lgb.train(
-                    params, 
-                    trn_d, 
-                    valid_sets=[val_d],
-                    num_boost_round=10000,
-                    feature_name=list(trn_X.columns))
+            
+        model.fit(trn_X, trn_y)
+        logloss = M.log_loss(val_y, model.predict_proba(val_X))
+        logger.info(f'Best score {logloss} | Log time {log_time}')
     else:
         trn_df = df[:3387880+97972]
         trn_X, trn_y = trn_df[feats], trn_df['is_installed']
-        trn_d = lgb.Dataset(trn_X, trn_y, feature_name=list(trn_X.columns))
-        model = lgb.train(
-                    params, 
-                    trn_d, 
-                    valid_sets=[trn_d],
-                    num_boost_round=nbr,
-                    feature_name=list(trn_X.columns))
+        model.fit(trn_X, trn_y)
         
-    if not os.path.exists("./saved/LightGBM"):
-        os.makedirs("./saved/LightGBM")
-    model.save_model(f"./saved/LightGBM/{log_time}.json")
-    logger.info(f"Best score: {model.best_score['valid_0']['binary_logloss']} | Log time {log_time} | Iteration {model.best_iteration}")
+    # if not os.path.exists("./saved/KNN"):
+    #     os.makedirs("./saved/KNN")
+    # model.save_model(f"./saved/KNN/{log_time}.model")
     
 if args.infer:
     if args.train:
         save_time = log_time
     else:
-        save_time = '2023-06-20-15-52-22'
-        model = lgb.Booster(model_file="./saved/LightGBM/"+save_time+".json")
+        save_time = '2023-06-20-19-13-18'
+        save_pth = "./saved/CatBoost/"+save_time+".model"
+        model = KNeighborsClassifier(**params)
+        # model.load_model(save_pth)
         
-    if not os.path.exists("./predictions/LightGBM"):
-            os.makedirs("./predictions/LightGBM")
-    
+    if not os.path.exists("./predictions/KNN"):
+        os.makedirs("./predictions/KNN")
+        
     if not args.infer_all:
         tst_X = df.loc[3387880+97972:, feats]
-        preds = model.predict(tst_X)
+        preds = model.predict_proba(tst_X)
         rowid = pd.read_csv('/root/autodl-tmp/xingmei/RecSysChallenge23/data/tst_rowid.csv')['f_0'].to_list()
         pred_df = pd.DataFrame({
                             'RowId': rowid, 
                             'is_clicked': 0, 
-                            'is_installed': preds
+                            'is_installed': preds[:, 1]
                         })
-        pred_df.to_csv(f'./predictions/LightGBM/{save_time}.csv', sep='\t', index=False)
+        pred_df.to_csv(f'./predictions/KNN/{save_time}.csv', sep='\t', index=False)
     else:
         X = df[feats]
-        preds = model.predict(X)
-        pred_df = pd.DataFrame({'is_installed_prob': preds})
-        pred_df.to_csv(f'./predictions/LightGBM/{save_time}is_installed.csv', sep='\t', index=False)
+        preds = model.predict_proba(X)
+        pred_df = pd.DataFrame({'is_installed_prob': preds[:, 1]})
+        pred_df.to_csv(f'./predictions/KNN/{save_time}is_installed.csv', sep='\t', index=False)

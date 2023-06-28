@@ -226,7 +226,7 @@ class Recommender(torch.nn.Module, abc.ABC):
     def predict(self, pred_data, save_path=None, dataset='test', **kwargs):
         pred_data.drop_feat(keep_fields=self.fields)
         pred_loader = pred_data.eval_loader(10000)
-        # self.config['eval']['save_path'] = '/root/autodl-tmp/yankai/Sharechat-RecSys-Challenge-23/saved/'
+        self.config['eval']['save_path'] = '/root/autodl-tmp/xingmei/RecSysChallenge23/saved'
         self.load_checkpoint(os.path.join(self.config['eval']['save_path'], self.ckpt_path))
         if 'config' in kwargs:
             self.config.update(kwargs['config'])     
