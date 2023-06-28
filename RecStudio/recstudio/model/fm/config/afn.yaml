@@ -1,9 +1,9 @@
 model:
-  log_hidden_size: 500
+  log_hidden_size: 128
   mlp_layer: [400, 400, 400]
   activation: relu
   dropout: 0.5
-  embed_dim: 20
+  embed_dim: 10
 
   ensemble: True
   ensemble_mlp_layer: [256, 64]

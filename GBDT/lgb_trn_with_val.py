@@ -9,7 +9,7 @@ import logging
 import re
 from collections import OrderedDict
 import pickle
-
+import sklearn.metrics as M
 
 class RemoveColorFilter(logging.Filter):
     def filter(self, record):
@@ -96,15 +96,15 @@ def color_dict_normal(dict_, keep=True,):
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--probs', type=str, default='none', choices=['install', 'all', 'none'])
+parser.add_argument('--probs', type=str, default='install', choices=['install', 'all', 'none'])
 parser.add_argument('--seed', type=int, default=2023)
 
 parser.add_argument('--train', type=bool, default=False)
-parser.add_argument('--train_with_val', type=bool, default=False)   # should motify num_boost_round
-nbr = 70
+parser.add_argument('--fold', type=int, default=None)
+nbr = 40
 
 parser.add_argument('--infer', type=bool, default=True)
-parser.add_argument('--infer_all', type=bool, default=True)
+parser.add_argument('--infer_all', type=bool, default=False)
 
 parser.add_argument('--weekday', type=bool, default=True)
 
@@ -155,7 +155,7 @@ if args.train:
     logger.info(f"\n{set_color('Model Config', 'green')}: \n\n" + color_dict_normal(params, False))
     
 if args.probs == 'all' or args.probs == 'install':
-    cache_path = os.path.join(data_dir, 'install_probs_trn_val_tst.cache')
+    cache_path = os.path.join(data_dir, 'install_probs_tvt_0.cache')
     if not os.path.exists(cache_path):
         df = pd.read_csv(os.path.join(data_dir, 'install_probs_trn_val_tst.csv'), sep='\t')
         with open(cache_path, 'wb') as f:
@@ -177,22 +177,6 @@ if args.probs == 'all':
         with open(cache_path_, 'rb') as f:
             df_ = pickle.load(f)
             f.close()
-            
-if args.probs == 'none':
-    cache_path = os.path.join(data_dir, 'preprocessed_trn_val_tst.cache')
-    path = os.path.join(data_dir, 'preprocessed_trn_val_tst.csv')
-    if args.weekday:
-        cache_path = os.path.join(data_dir, 'preprocessed_trn_val_tst_weekday.cache')
-        path = os.path.join(data_dir, 'preprocessed_trn_val_tst_with_weekday.csv')
-    if not os.path.exists(cache_path):
-        df = pd.read_csv(path, sep='\t')
-        with open(cache_path, 'wb') as f:
-            pickle.dump(df, f)
-            f.close()
-    else:
-        with open(cache_path, 'rb') as f:
-            df = pickle.load(f)
-            f.close()
 
 
 if args.probs == 'all':
@@ -200,53 +184,59 @@ if args.probs == 'all':
     
 feats = list(df.columns)
 feats.remove('is_installed')
-if args.probs == 'all' or args.probs == 'install':
-    for i in feats:
-        if i not in [
-                        'p_install_PLE', 
-                        'p_install_MMoE', 
-                        'p_install_IFM',
-                        'p_install_FwFM',
-                        'p_install_DCNv2',
-                    ]:
-            feats.remove(i)
+
 
 
 if args.train:
-    if not args.train_with_val:
-        trn_df = df[0:3387880]
-        val_df = df[3387880:3387880+97972]
-        trn_X, trn_y = trn_df[feats], trn_df['is_installed']
-        val_X, val_y = val_df[feats], val_df['is_installed']
-        trn_d = lgb.Dataset(trn_X, trn_y, feature_name=list(trn_X.columns))
-        val_d = lgb.Dataset(val_X, val_y, reference=trn_d, feature_name=list(trn_X.columns))
-        model = lgb.train(
-                    params, 
-                    trn_d, 
-                    valid_sets=[val_d],
-                    num_boost_round=10000,
-                    feature_name=list(trn_X.columns))
+    trn_df = df[3387880:3387880+97972]
+    trn_df.reset_index(inplace=True)
+    val_X = df[:3387880][feats]
+    val_y = df[:3387880]['is_installed']
+    val_logloss = sum_score = 0
+    if args.fold is not None:
+        sum_score = 0
+        kf = KFold(n_splits=args.fold, shuffle=True, random_state=args.seed)
+        for i, (trn_idx, tst_idx) in enumerate(kf.split(trn_df)):
+            logger.info(f'Fold {i+1}: trn size {len(trn_idx)} tst size {len(tst_idx)}')
+            trn_X, trn_y = trn_df.loc[trn_idx, feats], trn_df.loc[trn_idx, 'is_installed']
+            tst_X, tst_y = trn_df.loc[tst_idx, feats], trn_df.loc[tst_idx, 'is_installed']
+
+            trn_d = lgb.Dataset(trn_X, trn_y, feature_name=list(trn_X.columns))
+            tst_d = lgb.Dataset(tst_X, tst_y, reference=trn_d, feature_name=list(trn_X.columns))
+            model = lgb.train(
+                        params, 
+                        trn_d, 
+                        valid_sets=[tst_d],
+                        num_boost_round=10000,
+                        feature_name=list(trn_X.columns))
+            sum_score += model.best_score['valid_0']['binary_logloss']
+            preds = model.predict(val_X)
+            preds = [0 if i < 0 else 1 if i > 1 else i for i in preds]
+            val_logloss += M.log_loss(val_y, preds)
+        logger.info(f'Avg score {sum_score / args.fold} | Log time {log_time} | {val_logloss / args.fold}')
     else:
-        trn_df = df[:3387880+97972]
         trn_X, trn_y = trn_df[feats], trn_df['is_installed']
         trn_d = lgb.Dataset(trn_X, trn_y, feature_name=list(trn_X.columns))
         model = lgb.train(
                     params, 
                     trn_d, 
-                    valid_sets=[trn_d],
                     num_boost_round=nbr,
+                    valid_sets=[trn_d],
                     feature_name=list(trn_X.columns))
+        preds = model.predict(val_X)
+        preds = [0 if i < 0 else 1 if i > 1 else i for i in preds]
+        val_logloss = M.log_loss(val_y, preds)
+        logger.info(f"Best score {model.best_score} | Log time {log_time} | {val_logloss} | Iteration {model.best_iteration}")
         
     if not os.path.exists("./saved/LightGBM"):
         os.makedirs("./saved/LightGBM")
     model.save_model(f"./saved/LightGBM/{log_time}.json")
-    logger.info(f"Best score: {model.best_score['valid_0']['binary_logloss']} | Log time {log_time} | Iteration {model.best_iteration}")
     
 if args.infer:
     if args.train:
         save_time = log_time
     else:
-        save_time = '2023-06-20-15-52-22'
+        save_time = '2023-06-22-05-06-45'
         model = lgb.Booster(model_file="./saved/LightGBM/"+save_time+".json")
         
     if not os.path.exists("./predictions/LightGBM"):

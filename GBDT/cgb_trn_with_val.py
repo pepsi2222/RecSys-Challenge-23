@@ -8,6 +8,8 @@ import logging
 import re
 from collections import OrderedDict
 import pickle
+from sklearn.model_selection import KFold
+import sklearn.metrics as M
 
 
 class RemoveColorFilter(logging.Filter):
@@ -95,21 +97,22 @@ def color_dict_normal(dict_, keep=True,):
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--probs', type=str, default='none', choices=['install', 'all', 'none'])
+parser.add_argument('--probs', type=str, default='install', choices=['install', 'all', 'none'])
 parser.add_argument('--seed', type=int, default=2023)
 
 parser.add_argument('--train', type=bool, default=False)
-parser.add_argument('--train_with_val', type=bool, default=False)   # should motify iterations
-iterations = 250
+parser.add_argument('--fold', type=int, default=None)
+parser.add_argument('--train_with_val', type=bool, default=True)   # should motify iterations
+# iterations = 250
 
 parser.add_argument('--infer', type=bool, default=True)
-parser.add_argument('--infer_all', type=bool, default=True)
+parser.add_argument('--infer_all', type=bool, default=False)
 
 parser.add_argument('--weekday', type=bool, default=True)
 
-parser.add_argument('--md', type=int, default=9)
+parser.add_argument('--md', type=int, default=3)
 parser.add_argument('--mb', type=int, default=100)
-parser.add_argument('--mcs', type=int, default=100)
+parser.add_argument('--mcs', type=int, default=10)
 parser.add_argument('--l2', type=float, default=1000)
 # parser.add_argument('--l1', type=float, default=0.1)
 # parser.add_argument('--ff', type=float, default=0.6)
@@ -125,7 +128,7 @@ args = parser.parse_args()
 os.environ["CUDA_VISIBLE_DEVICES"] = '1'
 
 params = {
-    'iterations': iterations if args.train_with_val else 10000,
+    'iterations': 600, #iterations if args.train_with_val else 10000,
     'random_state': args.seed,
     'depth': args.md, 
     'min_child_samples': args.mcs,
@@ -179,7 +182,7 @@ if args.train:
     logger.info(f"\n{set_color('Model Config', 'green')}: \n\n" + color_dict_normal(params, False))
     
 if args.probs == 'all' or args.probs == 'install':
-    cache_path = os.path.join(data_dir, 'install_probs_trn_val_tst.cache')
+    cache_path = os.path.join(data_dir, 'install_probs_tvt_0.cache')
     if not os.path.exists(cache_path):
         df = pd.read_csv(os.path.join(data_dir, 'install_probs_trn_val_tst.csv'), sep='\t')
         with open(cache_path, 'wb') as f:
@@ -201,31 +204,7 @@ if args.probs == 'all':
         with open(cache_path_, 'rb') as f:
             df_ = pickle.load(f)
             f.close()
-            
-if args.probs == 'none':
-    cache_path = os.path.join(data_dir, 'preprocessed_trn_val_tst.cache')
-    path = os.path.join(data_dir, 'preprocessed_trn_val_tst.csv')
-    if args.weekday:
-        cache_path = os.path.join(data_dir, 'preprocessed_trn_val_tst_weekday.cache')
-        path = os.path.join(data_dir, 'preprocessed_trn_val_tst_with_weekday.csv')
-    if not os.path.exists(cache_path):
-        df = pd.read_csv(path, sep='\t')
-        with open(cache_path, 'wb') as f:
-            pickle.dump(df, f)
-            f.close()
-    else:
-        with open(cache_path, 'rb') as f:
-            df = pickle.load(f)
-            f.close()
-    cf = ['weekday', 
-          'f_2', 'f_3', 'f_4', 'f_5', 'f_6', 'f_8', 'f_9', 'f_10', 
-          'f_11', 'f_12', 'f_13', 'f_14', 'f_15', 'f_16', 'f_17', 'f_18', 'f_19', 
-          'f_20', 'f_21', 'f_22', 'f_23', 'f_24', 'f_25', 'f_26', 
-          'f_30', 'f_31', 'f_32', 'f_33', 'f_34', 'f_35', 'f_36', 'f_37', 'f_38', 'f_39', 
-          'f_40', 'f_41', 'f_42', 'f_44', 'f_45', 'f_46', 'f_47', 'f_48', 'f_49', 
-          'f_50', 'f_51', 'f_52', 'f_53', 'f_54', 'f_55', 'f_56', 'f_57', 
-          'f_60', 'f_61', 'f_62', 'f_63', 
-          'f_71', 'f_72', 'f_73', 'f_74', 'f_75', 'f_76', 'f_77', 'f_78', 'f_79']
+    
 
 
 if args.probs == 'all':
@@ -233,49 +212,54 @@ if args.probs == 'all':
     
 feats = list(df.columns)
 feats.remove('is_installed')
-if args.probs == 'all' or args.probs == 'install':
-    for i in feats:
-        if i not in [
-                        'p_install_PLE', 
-                        'p_install_MMoE', 
-                        'p_install_IFM',
-                        'p_install_FwFM',
-                        'p_install_DCNv2',
-                    ]:
-            feats.remove(i)
 
 if args.train:
-    model = CatBoostClassifier(**params)
     
-    if not args.train_with_val:
-        trn_df = df[0:3387880+50000]
-        val_df = df[3387880+50000:3387880+97972+50000]
-        trn_X, trn_y = trn_df[feats], trn_df['is_installed']
-        val_X, val_y = val_df[feats], val_df['is_installed']
     
-        trn_d = Pool(trn_X, trn_y, cat_features=cf)
-        tst_d = Pool(val_X, val_y, cat_features=cf)
+    trn_df = df[3387880:3387880+97972]
+    trn_df.reset_index(inplace=True)
+    val_X = df[:3387880][feats]
+    val_y = df[:3387880]['is_installed']
+    val_d = Pool(val_X, val_y)
+    val_logloss = 0
+    if args.fold is not None:
+        sum_score = 0
+        kf = KFold(n_splits=args.fold, shuffle=True, random_state=args.seed)
+        for i, (trn_idx, tst_idx) in enumerate(kf.split(trn_df)):
+            logger.info(f'Fold {i+1}: trn size {len(trn_idx)} tst size {len(tst_idx)}')
+            trn_X, trn_y = trn_df.loc[trn_idx, feats], trn_df.loc[trn_idx, 'is_installed']
+            tst_X, tst_y = trn_df.loc[tst_idx, feats], trn_df.loc[tst_idx, 'is_installed']
             
-        model.fit(
-                trn_d, 
-                use_best_model=True, 
-                verbose=True,
-                early_stopping_rounds=200,
-                eval_set=tst_d
-                )
-    else:
-        trn_df = df[:3387880+97972]
-        trn_X, trn_y = trn_df[feats], trn_df['is_installed']
-        trn_d = Pool(trn_X, trn_y, cat_features=cf)    
-        model.fit(
-                trn_d, 
-                use_best_model=True, 
-                verbose=True,
-                early_stopping_rounds=200,
-                eval_set=trn_d
-                )
+            trn_d = Pool(trn_X, trn_y)    
+            tst_d = Pool(tst_X, tst_y)
+            model = CatBoostClassifier(**params)
+            model.fit(
+                    trn_d, 
+                    use_best_model=True, 
+                    verbose=True,
+                    early_stopping_rounds=200,
+                    eval_set=tst_d
+                    )
+            sum_score += model.get_best_score()['validation']['Logloss']
+            val_logloss += M.log_loss(val_y, model.predict_proba(val_d))
+            
+        logger.info(f'Avg score {sum_score / args.fold} | Log time {log_time} | {val_logloss / args.fold}')
     
-    logger.info(f'Best score {model.get_best_score()} | Log time {log_time}')
+    else:
+        trn_X, trn_y = trn_df[feats], trn_df['is_installed']
+        trn_d = Pool(trn_X, trn_y)    
+        model = CatBoostClassifier(**params)
+        model.fit(trn_d, 
+                    use_best_model=True, 
+                    verbose=True,
+                    early_stopping_rounds=200
+                    )
+        val_X = df[:3387880][feats]
+        val_y = df[:3387880]['is_installed']
+        val_d = Pool(val_X, val_y)
+        preds = model.predict_proba(val_d)
+        logger.info(f"Best score {model.get_best_score()} | Log time {log_time} | {M.log_loss(val_y, preds)}")
+        
     if not os.path.exists("./saved/CatBoost"):
         os.makedirs("./saved/CatBoost")
     model.save_model(f"./saved/CatBoost/{log_time}.model")
@@ -284,7 +268,7 @@ if args.infer:
     if args.train:
         save_time = log_time
     else:
-        save_time = '2023-06-20-20-28-27'
+        save_time = '2023-06-22-04-45-04'
         save_pth = "./saved/CatBoost/"+save_time+".model"
         model = CatBoostClassifier()
         model.load_model(save_pth)
@@ -294,7 +278,7 @@ if args.infer:
         
     if not args.infer_all:
         tst_X = df.loc[3387880+97972:, feats]
-        tst_d = Pool(tst_X, cat_features=cf)
+        tst_d = Pool(tst_X)
         preds = model.predict_proba(tst_d)
         rowid = pd.read_csv('/root/autodl-tmp/xingmei/RecSysChallenge23/data/tst_rowid.csv')['f_0'].to_list()
         pred_df = pd.DataFrame({
@@ -305,7 +289,7 @@ if args.infer:
         pred_df.to_csv(f'./predictions/CatBoost/{save_time}.csv', sep='\t', index=False)
     else:
         X = df[feats]
-        d = Pool(X, cat_features=cf)
+        d = Pool(X)
         preds = model.predict_proba(d)
         pred_df = pd.DataFrame({'is_installed_prob': preds[:, 1]})
         pred_df.to_csv(f'./predictions/CatBoost/{save_time}is_installed.csv', sep='\t', index=False)
