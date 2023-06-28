@@ -12,8 +12,8 @@ log1p = True
 model = 'PPNet'
 
 # only work when without_val
-early_stop_delta = 0.02
-early_stop_patience = 2
+early_stop_delta = 0.005
+early_stop_patience = 5
 
 # ckpt_name = '2023-06-21-22-32-26.ckpt'
 ckpt_name = '2023-06-22-20-07-42.ckpt'

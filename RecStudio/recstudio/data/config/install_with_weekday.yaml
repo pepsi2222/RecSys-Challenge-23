@@ -1,4 +1,4 @@
-url: '/data2/home/xingmei/RecSys23/data'
+url: '/root/autodl-tmp/xingmei/RecSys23/data'
 user_id_field: ~
 item_id_field: ~
 time_field: &t f_1:float

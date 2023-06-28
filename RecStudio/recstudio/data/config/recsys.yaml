@@ -63,9 +63,24 @@ time_field: ~
 # inter_feat_name: install_probs_tvt_0_650.csv
 
 # 640
-inter_feat_field: [p_install_DCNv2_620:float, p_install_PLE_629:float, p_install_HardShare_632:float, p_install_DCNv2_634:float, p_install_PLE_636:float, p_install_DCNv2SEnet_637:float, p_install_WideDeep_637:float, p_install_PLEMLP_637:float, p_install_PLEMLP_638:float, p_install_DCNv2SEnet_640:float, p_install_DeepCrossing_640:float, p_install_IFM_640:float, *r]
-inter_feat_name: install_probs_tvt_0_640.csv
+# inter_feat_field: [p_install_DCNv2_620:float, p_install_PLE_629:float, p_install_HardShare_632:float, p_install_DCNv2_634:float, p_install_PLE_636:float, p_install_DCNv2SEnet_637:float, p_install_WideDeep_637:float, p_install_PLEMLP_637:float, p_install_PLEMLP_638:float, p_install_DCNv2SEnet_640:float, p_install_DeepCrossing_640:float, p_install_IFM_640:float, *r]
+# inter_feat_name: install_probs_tvt_0_640.csv
 
+# v1
+## 650
+# inter_feat_field: [p_install_DCNv2_620:float, p_install_HardShareSEnet_624:float, p_install_PLEMLPSEnet_625:float, p_install_PLESEnet_627:float, p_install_PLE_629:float, p_install_HardShare_632:float, p_install_DCNv2SEnet_6335:float, p_install_HardShareSEnet_634:float, p_install_MMoEMLP_634:float, p_install_DCNv2_634:float, p_install_PLE_636:float, p_install_DCNv2SEnet_637:float, p_install_IFMMLP_637:float, p_install_WideDeep_637:float, p_install_PLEMLP_637:float, p_install_MMoEMLP_638:float, p_install_PLEMLP_63800:float, p_install_PLEMLPSEnet_639:float, p_install_DCNv2SEnet_640:float, p_install_DeepCrossing_640:float, p_install_IFM_640:float, p_install_PLE_642:float, p_install_HardShareSEnet_643:float, p_install_IFMMLP_6445:float, p_install_MMoE_644:float, p_install_DeepIM_645:float, p_install_NFM_645:float, p_install_FLEN_645:float, p_install_DCNv2_645:float, p_install_HardShare_646:float, p_install_IFMMLP_646:float, p_install_DCNv2SEnet_647:float, p_install_CatBoost_647:float, p_install_MMoEMLP_648:float, p_install_PLESEnet_649:float, p_install_MMoEMLP_649:float, p_install_DCNv2_649:float, p_install_DCNv2_6490:float, p_install_DCNv2_650:float, *r]
+# inter_feat_name: install_probs_650.csv
+# inter_feat_name: install_probs_650_val_tst.csv
+
+## 640
+inter_feat_field: [p_install_DCNv2_620:float, p_install_HardShareSEnet_624:float, p_install_PLEMLPSEnet_625:float, p_install_PLESEnet_627:float, p_install_PLE_629:float, p_install_HardShare_632:float, p_install_DCNv2SEnet_6335:float, p_install_HardShareSEnet_634:float, p_install_MMoEMLP_634:float, p_install_DCNv2_634:float, p_install_PLE_636:float, p_install_DCNv2SEnet_637:float, p_install_IFMMLP_637:float, p_install_WideDeep_637:float, p_install_PLEMLP_637:float, p_install_MMoEMLP_638:float, p_install_PLEMLP_63800:float, p_install_PLEMLPSEnet_639:float, p_install_DCNv2SEnet_640:float, p_install_DeepCrossing_640:float, p_install_IFM_640:float, *r]
+inter_feat_name: install_probs_640.csv
+# inter_feat_name: install_probs_640_val_tst.csv
+
+## 630
+inter_feat_field: [p_install_DCNv2_620:float, p_install_HardShareSEnet_624:float, p_install_PLEMLPSEnet_625:float, p_install_PLESEnet_627:float, p_install_PLE_629:float, *r]
+inter_feat_name: install_probs_630.csv
+# inter_feat_name: install_probs_630_val_tst.csv
 
 inter_feat_header: 0
 

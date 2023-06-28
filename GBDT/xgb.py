@@ -96,26 +96,26 @@ def color_dict_normal(dict_, keep=True,):
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--probs', type=str, default='install', choices=['install', 'all', 'none'])
+parser.add_argument('--probs', type=str, default='none', choices=['install', 'all', 'none'])
 parser.add_argument('--seed', type=int, default=2023)
 
 parser.add_argument('--gpu', type=str, default='6')
-parser.add_argument('--train', type=bool, default=False)
-parser.add_argument('--infer', type=bool, default=True)
+parser.add_argument('--train', type=bool, default=True)
+parser.add_argument('--infer', type=bool, default=False)
 parser.add_argument('--infer_all', type=bool, default=False)
 
 parser.add_argument('--weekday', type=bool, default=True)
 
 # 640
-parser.add_argument('--md', type=int, default=2)
-parser.add_argument('--mcw', type=int, default=2000)
-parser.add_argument('--gamma', type=float, default=0.)
-parser.add_argument('--csb', type=float, default=1)
-parser.add_argument('--ss', type=float, default=0.8)
-parser.add_argument('--rl', type=float, default=10)
-parser.add_argument('--ra', type=float, default=0.)
-parser.add_argument('--spw', type=float, default=1)
-parser.add_argument('--lr', type=float, default=0.1)
+# parser.add_argument('--md', type=int, default=2)
+# parser.add_argument('--mcw', type=int, default=1000)
+# parser.add_argument('--gamma', type=float, default=0.)
+# parser.add_argument('--csb', type=float, default=0.8)
+# parser.add_argument('--ss', type=float, default=0.8)
+# parser.add_argument('--rl', type=float, default=10)
+# parser.add_argument('--ra', type=float, default=0.)
+# parser.add_argument('--spw', type=float, default=1)
+# parser.add_argument('--lr', type=float, default=0.05)
 
 # 650
 # parser.add_argument('--md', type=int, default=3)
@@ -139,15 +139,15 @@ parser.add_argument('--lr', type=float, default=0.1)
 # parser.add_argument('--spw', type=float, default=1)
 # parser.add_argument('--lr', type=float, default=0.1)
 
-# parser.add_argument('--md', type=int, default=9)
-# parser.add_argument('--mcw', type=int, default=1000)
-# parser.add_argument('--gamma', type=float, default=0.)
-# parser.add_argument('--csb', type=float, default=0.7)
-# parser.add_argument('--ss', type=float, default=0.8)
-# parser.add_argument('--rl', type=float, default=100)
-# parser.add_argument('--ra', type=float, default=0.01)
-# parser.add_argument('--spw', type=float, default=1)
-# parser.add_argument('--lr', type=float, default=0.1)
+parser.add_argument('--md', type=int, default=9)
+parser.add_argument('--mcw', type=int, default=1000)
+parser.add_argument('--gamma', type=float, default=0.)
+parser.add_argument('--csb', type=float, default=0.7)
+parser.add_argument('--ss', type=float, default=0.8)
+parser.add_argument('--rl', type=float, default=100)
+parser.add_argument('--ra', type=float, default=0.01)
+parser.add_argument('--spw', type=float, default=1)
+parser.add_argument('--lr', type=float, default=0.1)
 
 # parser.add_argument('--md', type=int, default=3)
 # parser.add_argument('--mcw', type=int, default=1000)
@@ -192,7 +192,7 @@ params = {
 }
 if args.train:
     log_time = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())
-    log_path = f"./log/XGBoost/{args.probs}-650/{log_time}.log"
+    log_path = f"./log/XGBoost/{args.probs}-640/{log_time}.log"
     logger = get_logger(log_path)
     logger.info(f'log saved in {log_path}')
     sys.stdout.write = logger.info
@@ -200,7 +200,7 @@ if args.train:
     logger.info('Loading csv')
     
 if args.probs == 'all' or args.probs == 'install':
-    cache_path = '/root/autodl-tmp/xingmei/RecSys23/data/install_probs_tvt_0_650.cache'
+    cache_path = '/root/autodl-tmp/xingmei/RecSys23/data/install_probs_tvt_0_640.cache'
     if not os.path.exists(cache_path):
         df = pd.read_csv('/root/autodl-tmp/xingmei/RecSys23/data/install_probs_tvt_0_650.csv', sep='\t')
         with open(cache_path, 'wb') as f:
