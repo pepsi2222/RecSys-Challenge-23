@@ -1,4 +1,4 @@
-url: '/root/autodl-tmp/xingmei/RecSys23/data'
+url: '/data2/home/xingmei/RecSys23/data'
 user_id_field: ~
 item_id_field: ~
 time_field: &t f_1:float
@@ -45,6 +45,6 @@ network_feat_header: ~
 # p = KBinsDiscretizer(n_bins=5, strategy="quantile", encode="ordinal")
 
 # f42, f43, f51, f58, f59, f64-70
-float_field_preprocess: ~ # [f_64:MinMaxScaler(), rest:StandardScaler()]
+float_field_preprocess: StandardScaler() # [f_64:MinMaxScaler(), rest:StandardScaler()]
 
 save_cache: True

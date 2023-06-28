@@ -1,0 +1,414 @@
+[2023-06-21 22:24:10] INFO Log saved in /data2/home/xingmei/RecSys23/log/PLESEnet/multi_with_weekday/2023-06-21-22-24-10.log.
+[2023-06-21 22:24:10] INFO Global seed set to 2022
+[2023-06-21 22:24:10] INFO Load dataset from cache.
+[2023-06-21 22:24:12] INFO 
+Dataset Info: 
+
+===================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================
+interaction information: 
+field        weekday      f_1          f_2          f_3          f_4          f_5          f_6          f_8          f_9          f_10         f_11         f_12         f_13         f_14         f_15         f_16         f_17         f_18         f_19         f_20         f_21         f_22         f_23         f_24         f_25         f_26         f_30         f_31         f_32         f_33         f_34         f_35         f_36         f_37         f_38         f_39         f_40         f_41         f_42         f_43         f_44         f_45         f_46         f_47         f_48         f_49         f_50         f_51         f_52         f_53         f_54         f_55         f_56         f_57         f_58         f_59         f_60         f_61         f_62         f_63         f_64         f_65         f_66         f_67         f_68         f_69         f_70         f_71         f_72         f_73         f_74         f_75         f_76         f_77         f_78         f_79         is_clicked   is_installed 
+type         token        float        token        token        token        token        token        token        token        token        token        token        token        token        token        token        token        token        token        token        token        token        token        token        token        token        token        token        token        token        token        token        token        token        token        token        token        token        token        float        token        token        token        token        token        token        token        token        token        token        token        token        token        token        float        float        token        token        token        token        float        float        float        float        float        float        float        token        token        token        token        token        token        token        token        token        float        float        
+##           8            -            140          6            639          7            5235         7            8            4            25           27           332          20           5855         13           50           925          20           58           36           27           5            5            4            3            3            3            5            3            3            3            3            3            3            3            3            3            8883         -            22           24           12           28           28           21           35           1829         172          103          213          390          221          517          -            -            403          826          1397         408          -            -            -            -            -            -            -            5            12           9            5            32           9            5            14           8            -            -            
+===================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================
+Total Interactions: 3646825
+===================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================================
+f_1=StandardScaler()
+f_43=StandardScaler()
+f_58=StandardScaler()
+f_59=StandardScaler()
+f_64=MinMaxScaler()
+f_65=StandardScaler()
+f_66=StandardScaler()
+f_67=StandardScaler()
+f_68=StandardScaler()
+f_69=StandardScaler()
+f_70=StandardScaler()
+[2023-06-21 22:24:12] INFO 
+Model Config: 
+
+data:
+	binarized_rating_thres=None
+	fm_eval=False
+	neg_count=0
+	sampler=None
+	shuffle=False
+	split_mode=entry
+	split_ratio=[3387880, 97972, 160973]
+	fmeval=True
+	low_rating_thres=None
+eval:
+	batch_size=4096
+	cutoff=[5, 10, 20]
+	val_metrics=['logloss', 'auc', 'accuracy', 'f1', 'precision', 'recall']
+	val_n_epoch=1
+	test_metrics=['logloss', 'auc', 'accuracy', 'f1', 'precision', 'recall']
+	topk=100
+	save_path=./saved/
+	binarized_prob_thres=0.5
+	main_task=is_installed
+model:
+	embed_dim=40
+	item_bias=False
+	num_levels=2
+	specific_experts_per_task=4
+	num_shared_experts=3
+	expert_mlp_layer=[256, 256]
+	expert_activation=relu
+	expert_dropout=0.5
+	gate_mlp_layer=[128]
+	gate_activation=relu
+	gate_dropout=0.1
+	tower_mlp_layer=[128]
+	tower_activation=relu
+	tower_dropout=0.1
+	tower_batch_norm=False
+	reduction_ratio=3
+	excitation_activation=relu
+	weights=[1.0, 20.0]
+train:
+	accelerator=gpu
+	ann=None
+	batch_size=2048
+	early_stop_mode=min
+	early_stop_patience=10
+	early_stop_delta=0.02
+	epochs=1000
+	gpu=[8]
+	grad_clip_norm=None
+	init_method=xavier_normal
+	item_batch_size=1024
+	learner=adam
+	learning_rate=0.001
+	num_threads=10
+	sampling_method=none
+	sampler=uniform
+	negative_count=0
+	excluding_hist=False
+	scheduler=None
+	seed=2022
+	weight_decay=1e-05
+	tensorboard_path=None
+	weights=[1.0, 20.0]
+[2023-06-21 22:24:12] INFO save_dir:./saved/
+[2023-06-21 22:24:12] INFO PLESEnet(
+  (loss_fn): BCEWithLogitLoss()
+  (embedding): Embeddings(
+    num_features=76, embed_dim=40, reduction=mean
+    (embeddings): ModuleDict(
+      (f_49): Embedding(21, 40, padding_idx=0)
+      (f_47): Embedding(28, 40, padding_idx=0)
+      (f_41): Embedding(3, 40, padding_idx=0)
+      (f_79): Embedding(8, 40, padding_idx=0)
+      (f_51): Embedding(1829, 40, padding_idx=0)
+      (f_69): DenseEmbedding(
+        embedding_dim=40, bias=False, batch_norm=True
+        (batch_norm_layer): BatchNorm1d(1, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (weight): Linear(in_features=1, out_features=40, bias=False)
+      )
+      (f_75): Embedding(32, 40, padding_idx=0)
+      (f_64): DenseEmbedding(
+        embedding_dim=40, bias=False, batch_norm=True
+        (batch_norm_layer): BatchNorm1d(1, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (weight): Linear(in_features=1, out_features=40, bias=False)
+      )
+      (f_6): Embedding(5235, 40, padding_idx=0)
+      (f_22): Embedding(27, 40, padding_idx=0)
+      (f_72): Embedding(12, 40, padding_idx=0)
+      (f_78): Embedding(14, 40, padding_idx=0)
+      (f_21): Embedding(36, 40, padding_idx=0)
+      (f_43): DenseEmbedding(
+        embedding_dim=40, bias=False, batch_norm=True
+        (batch_norm_layer): BatchNorm1d(1, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (weight): Linear(in_features=1, out_features=40, bias=False)
+      )
+      (f_42): Embedding(8883, 40, padding_idx=0)
+      (f_50): Embedding(35, 40, padding_idx=0)
+      (f_11): Embedding(25, 40, padding_idx=0)
+      (f_60): Embedding(403, 40, padding_idx=0)
+      (f_63): Embedding(408, 40, padding_idx=0)
+      (f_13): Embedding(332, 40, padding_idx=0)
+      (f_57): Embedding(517, 40, padding_idx=0)
+      (weekday): Embedding(8, 40, padding_idx=0)
+      (f_61): Embedding(826, 40, padding_idx=0)
+      (f_14): Embedding(20, 40, padding_idx=0)
+      (f_59): DenseEmbedding(
+        embedding_dim=40, bias=False, batch_norm=True
+        (batch_norm_layer): BatchNorm1d(1, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (weight): Linear(in_features=1, out_features=40, bias=False)
+      )
+      (f_55): Embedding(390, 40, padding_idx=0)
+      (f_40): Embedding(3, 40, padding_idx=0)
+      (f_45): Embedding(24, 40, padding_idx=0)
+      (f_65): DenseEmbedding(
+        embedding_dim=40, bias=False, batch_norm=True
+        (batch_norm_layer): BatchNorm1d(1, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (weight): Linear(in_features=1, out_features=40, bias=False)
+      )
+      (f_67): DenseEmbedding(
+        embedding_dim=40, bias=False, batch_norm=True
+        (batch_norm_layer): BatchNorm1d(1, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (weight): Linear(in_features=1, out_features=40, bias=False)
+      )
+      (f_3): Embedding(6, 40, padding_idx=0)
+      (f_35): Embedding(3, 40, padding_idx=0)
+      (f_77): Embedding(5, 40, padding_idx=0)
+      (f_33): Embedding(3, 40, padding_idx=0)
+      (f_34): Embedding(3, 40, padding_idx=0)
+      (f_24): Embedding(5, 40, padding_idx=0)
+      (f_18): Embedding(925, 40, padding_idx=0)
+      (f_48): Embedding(28, 40, padding_idx=0)
+      (f_32): Embedding(5, 40, padding_idx=0)
+      (f_37): Embedding(3, 40, padding_idx=0)
+      (f_74): Embedding(5, 40, padding_idx=0)
+      (f_39): Embedding(3, 40, padding_idx=0)
+      (f_58): DenseEmbedding(
+        embedding_dim=40, bias=False, batch_norm=True
+        (batch_norm_layer): BatchNorm1d(1, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (weight): Linear(in_features=1, out_features=40, bias=False)
+      )
+      (f_36): Embedding(3, 40, padding_idx=0)
+      (f_56): Embedding(221, 40, padding_idx=0)
+      (f_52): Embedding(172, 40, padding_idx=0)
+      (f_31): Embedding(3, 40, padding_idx=0)
+      (f_46): Embedding(12, 40, padding_idx=0)
+      (f_5): Embedding(7, 40, padding_idx=0)
+      (f_12): Embedding(27, 40, padding_idx=0)
+      (f_70): DenseEmbedding(
+        embedding_dim=40, bias=False, batch_norm=True
+        (batch_norm_layer): BatchNorm1d(1, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (weight): Linear(in_features=1, out_features=40, bias=False)
+      )
+      (f_20): Embedding(58, 40, padding_idx=0)
+      (f_30): Embedding(3, 40, padding_idx=0)
+      (f_23): Embedding(5, 40, padding_idx=0)
+      (f_54): Embedding(213, 40, padding_idx=0)
+      (f_4): Embedding(639, 40, padding_idx=0)
+      (f_9): Embedding(8, 40, padding_idx=0)
+      (f_71): Embedding(5, 40, padding_idx=0)
+      (f_10): Embedding(4, 40, padding_idx=0)
+      (f_15): Embedding(5855, 40, padding_idx=0)
+      (f_8): Embedding(7, 40, padding_idx=0)
+      (f_73): Embedding(9, 40, padding_idx=0)
+      (f_68): DenseEmbedding(
+        embedding_dim=40, bias=False, batch_norm=True
+        (batch_norm_layer): BatchNorm1d(1, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (weight): Linear(in_features=1, out_features=40, bias=False)
+      )
+      (f_76): Embedding(9, 40, padding_idx=0)
+      (f_38): Embedding(3, 40, padding_idx=0)
+      (f_26): Embedding(3, 40, padding_idx=0)
+      (f_2): Embedding(140, 40, padding_idx=0)
+      (f_62): Embedding(1397, 40, padding_idx=0)
+      (f_16): Embedding(13, 40, padding_idx=0)
+      (f_25): Embedding(4, 40, padding_idx=0)
+      (f_53): Embedding(103, 40, padding_idx=0)
+      (f_1): DenseEmbedding(
+        embedding_dim=40, bias=False, batch_norm=True
+        (batch_norm_layer): BatchNorm1d(1, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (weight): Linear(in_features=1, out_features=40, bias=False)
+      )
+      (f_17): Embedding(50, 40, padding_idx=0)
+      (f_66): DenseEmbedding(
+        embedding_dim=40, bias=False, batch_norm=True
+        (batch_norm_layer): BatchNorm1d(1, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (weight): Linear(in_features=1, out_features=40, bias=False)
+      )
+      (f_19): Embedding(20, 40, padding_idx=0)
+      (f_44): Embedding(22, 40, padding_idx=0)
+    )
+  )
+  (extraction_layers): Sequential(
+    (0): ExtractionLayer(
+      specific_experts_per_task=4, num_task=2, num_shared_experts=3
+      (specific_experts): ModuleList(
+        (0-1): 2 x ModuleList(
+          (0-3): 4 x MLPModule(
+            (model): Sequential(
+              (0): Dropout(p=0.5, inplace=False)
+              (1): Linear(in_features=3040, out_features=256, bias=True)
+              (2): ReLU()
+              (3): Dropout(p=0.5, inplace=False)
+              (4): Linear(in_features=256, out_features=256, bias=True)
+              (5): ReLU()
+            )
+          )
+        )
+      )
+      (shared_experts): ModuleList(
+        (0-2): 3 x MLPModule(
+          (model): Sequential(
+            (0): Dropout(p=0.5, inplace=False)
+            (1): Linear(in_features=3040, out_features=256, bias=True)
+            (2): ReLU()
+            (3): Dropout(p=0.5, inplace=False)
+            (4): Linear(in_features=256, out_features=256, bias=True)
+            (5): ReLU()
+          )
+        )
+      )
+      (gates): ModuleList(
+        (0-1): 2 x MLPModule(
+          (model): Sequential(
+            (0): Dropout(p=0.1, inplace=False)
+            (1): Linear(in_features=3040, out_features=128, bias=True)
+            (2): ReLU()
+            (3): Dropout(p=0.1, inplace=False)
+            (4): Linear(in_features=128, out_features=7, bias=True)
+            (5): ReLU()
+            (6): Softmax(dim=-1)
+          )
+        )
+      )
+      (shared_gates): MLPModule(
+        (model): Sequential(
+          (0): Dropout(p=0.1, inplace=False)
+          (1): Linear(in_features=3040, out_features=128, bias=True)
+          (2): ReLU()
+          (3): Dropout(p=0.1, inplace=False)
+          (4): Linear(in_features=128, out_features=11, bias=True)
+          (5): ReLU()
+          (6): Softmax(dim=-1)
+        )
+      )
+    )
+    (1): ExtractionLayer(
+      specific_experts_per_task=4, num_task=2, num_shared_experts=3
+      (specific_experts): ModuleList(
+        (0-1): 2 x ModuleList(
+          (0-3): 4 x MLPModule(
+            (model): Sequential(
+              (0): Dropout(p=0.5, inplace=False)
+              (1): Linear(in_features=256, out_features=256, bias=True)
+              (2): ReLU()
+              (3): Dropout(p=0.5, inplace=False)
+              (4): Linear(in_features=256, out_features=256, bias=True)
+              (5): ReLU()
+            )
+          )
+        )
+      )
+      (shared_experts): ModuleList(
+        (0-2): 3 x MLPModule(
+          (model): Sequential(
+            (0): Dropout(p=0.5, inplace=False)
+            (1): Linear(in_features=256, out_features=256, bias=True)
+            (2): ReLU()
+            (3): Dropout(p=0.5, inplace=False)
+            (4): Linear(in_features=256, out_features=256, bias=True)
+            (5): ReLU()
+          )
+        )
+      )
+      (gates): ModuleList(
+        (0-1): 2 x MLPModule(
+          (model): Sequential(
+            (0): Dropout(p=0.1, inplace=False)
+            (1): Linear(in_features=256, out_features=128, bias=True)
+            (2): ReLU()
+            (3): Dropout(p=0.1, inplace=False)
+            (4): Linear(in_features=128, out_features=7, bias=True)
+            (5): ReLU()
+            (6): Softmax(dim=-1)
+          )
+        )
+      )
+    )
+  )
+  (towers): ModuleDict(
+    (is_clicked): MLPModule(
+      (model): Sequential(
+        (0): Dropout(p=0.1, inplace=False)
+        (1): Linear(in_features=256, out_features=128, bias=True)
+        (2): ReLU()
+        (3): Dropout(p=0.1, inplace=False)
+        (4): Linear(in_features=128, out_features=1, bias=True)
+      )
+    )
+    (is_installed): MLPModule(
+      (model): Sequential(
+        (0): Dropout(p=0.1, inplace=False)
+        (1): Linear(in_features=256, out_features=128, bias=True)
+        (2): ReLU()
+        (3): Dropout(p=0.1, inplace=False)
+        (4): Linear(in_features=128, out_features=1, bias=True)
+      )
+    )
+  )
+  (senet): SqueezeExcitation(
+    pool=avg, reduced_size=25, activation=['relu', 'relu']
+    (excitation): Sequential(
+      (0): Linear(in_features=76, out_features=25, bias=False)
+      (1): ReLU()
+      (2): Linear(in_features=25, out_features=76, bias=False)
+      (3): ReLU()
+    )
+  )
+)
+[2023-06-21 22:24:12] INFO GPU id [8] are selected.
+[2023-06-21 22:25:30] INFO Training: Epoch=  0 [train_loss_0=0.2812 is_clicked logloss=0.6931 accuracy=0.6375 f1=0.0000 precision=0.0000 recall=0.0000 auc=0.5000 train_loss_0=0.6932 is_installed logloss=0.3766 accuracy=0.8244 f1=0.2482 precision=0.6275 recall=0.1548 auc=0.8268 train_loss_0=0.2812]
+[2023-06-21 22:25:30] INFO Train time: 76.36197s. Valid time: 0.63852s. GPU RAM: 1.27/10.76 GB
+[2023-06-21 22:25:30] INFO logloss improved. Best value: 0.3766
+[2023-06-21 22:26:46] INFO Training: Epoch=  1 [train_loss_0=0.2658 is_clicked logloss=0.6931 accuracy=0.6375 f1=0.0000 precision=0.0000 recall=0.0000 auc=0.5000 train_loss_0=0.6931 is_installed logloss=0.4140 accuracy=0.8178 f1=0.2574 precision=0.5446 recall=0.1687 auc=0.7892 train_loss_0=0.2658]
+[2023-06-21 22:26:46] INFO Train time: 75.32103s. Valid time: 0.83489s. GPU RAM: 1.28/10.76 GB
+[2023-06-21 22:28:04] INFO Training: Epoch=  2 [train_loss_0=0.2618 is_clicked logloss=0.6931 accuracy=0.6375 f1=0.0000 precision=0.0000 recall=0.0000 auc=0.5000 train_loss_0=0.6931 is_installed logloss=0.3902 accuracy=0.8203 f1=0.2852 precision=0.5605 recall=0.1914 auc=0.8095 train_loss_0=0.2618]
+[2023-06-21 22:28:04] INFO Train time: 77.18311s. Valid time: 0.65616s. GPU RAM: 1.28/10.76 GB
+[2023-06-21 22:29:20] INFO Training: Epoch=  3 [train_loss_0=0.2598 is_clicked logloss=0.6931 accuracy=0.6375 f1=0.0000 precision=0.0000 recall=0.0000 auc=0.5000 train_loss_0=0.6931 is_installed logloss=0.3930 accuracy=0.8186 f1=0.2800 precision=0.5465 recall=0.1884 auc=0.8107 train_loss_0=0.2598]
+[2023-06-21 22:29:20] INFO Train time: 75.22479s. Valid time: 0.64871s. GPU RAM: 1.28/10.76 GB
+[2023-06-21 22:30:36] INFO Training: Epoch=  4 [train_loss_0=0.2586 is_clicked logloss=0.6931 accuracy=0.6375 f1=0.0000 precision=0.0000 recall=0.0000 auc=0.5000 train_loss_0=0.6931 is_installed logloss=0.4019 accuracy=0.8189 f1=0.2082 precision=0.5758 recall=0.1272 auc=0.8081 train_loss_0=0.2586]
+[2023-06-21 22:30:36] INFO Train time: 75.35279s. Valid time: 0.70400s. GPU RAM: 1.28/10.76 GB
+[2023-06-21 22:31:53] INFO Training: Epoch=  5 [train_loss_0=0.2578 is_clicked logloss=0.6931 accuracy=0.6375 f1=0.0000 precision=0.0000 recall=0.0000 auc=0.5000 train_loss_0=0.6931 is_installed logloss=0.3909 accuracy=0.8207 f1=0.2072 precision=0.6048 recall=0.1252 auc=0.8182 train_loss_0=0.2578]
+[2023-06-21 22:31:53] INFO Train time: 75.82314s. Valid time: 0.68701s. GPU RAM: 1.28/10.76 GB
+[2023-06-21 22:33:10] INFO Training: Epoch=  6 [train_loss_0=0.2572 is_clicked logloss=0.6931 accuracy=0.6375 f1=0.0000 precision=0.0000 recall=0.0000 auc=0.5000 train_loss_0=0.6931 is_installed logloss=0.3815 accuracy=0.8214 f1=0.2695 precision=0.5779 recall=0.1759 auc=0.8212 train_loss_0=0.2572]
+[2023-06-21 22:33:10] INFO Train time: 77.12673s. Valid time: 0.67803s. GPU RAM: 1.28/10.76 GB
+[2023-06-21 22:34:26] INFO Training: Epoch=  7 [train_loss_0=0.2568 is_clicked logloss=0.6931 accuracy=0.6375 f1=0.0000 precision=0.0000 recall=0.0000 auc=0.5000 train_loss_0=0.6931 is_installed logloss=0.3746 accuracy=0.8216 f1=0.2607 precision=0.5831 recall=0.1680 auc=0.8258 train_loss_0=0.2568]
+[2023-06-21 22:34:26] INFO Train time: 74.71550s. Valid time: 0.66814s. GPU RAM: 1.28/10.76 GB
+[2023-06-21 22:34:26] INFO logloss improved. Best value: 0.3746
+[2023-06-21 22:35:42] INFO Training: Epoch=  8 [train_loss_0=0.2565 is_clicked logloss=0.6931 accuracy=0.6375 f1=0.0000 precision=0.0000 recall=0.0000 auc=0.5000 train_loss_0=0.6931 is_installed logloss=0.3796 accuracy=0.8248 f1=0.2705 precision=0.6152 recall=0.1735 auc=0.8274 train_loss_0=0.2565]
+[2023-06-21 22:35:42] INFO Train time: 75.01899s. Valid time: 0.67962s. GPU RAM: 1.28/10.76 GB
+[2023-06-21 22:36:58] INFO Training: Epoch=  9 [train_loss_0=0.2563 is_clicked logloss=0.6931 accuracy=0.6375 f1=0.0000 precision=0.0000 recall=0.0000 auc=0.5000 train_loss_0=0.6931 is_installed logloss=0.3834 accuracy=0.8203 f1=0.2598 precision=0.5694 recall=0.1684 auc=0.8249 train_loss_0=0.2563]
+[2023-06-21 22:36:58] INFO Train time: 75.48324s. Valid time: 0.63114s. GPU RAM: 1.28/10.76 GB
+[2023-06-21 22:38:13] INFO Training: Epoch= 10 [train_loss_0=0.2560 is_clicked logloss=0.6931 accuracy=0.6375 f1=0.0000 precision=0.0000 recall=0.0000 auc=0.5000 train_loss_0=0.6931 is_installed logloss=0.3729 accuracy=0.8212 f1=0.2924 precision=0.5658 recall=0.1972 auc=0.8258 train_loss_0=0.2560]
+[2023-06-21 22:38:13] INFO Train time: 74.34235s. Valid time: 0.70542s. GPU RAM: 1.28/10.76 GB
+[2023-06-21 22:38:14] INFO logloss improved. Best value: 0.3729
+[2023-06-21 22:39:25] INFO Training: Epoch= 11 [train_loss_0=0.2557 is_clicked logloss=0.6931 accuracy=0.6375 f1=0.0000 precision=0.0000 recall=0.0000 auc=0.5000 train_loss_0=0.6931 is_installed logloss=0.3741 accuracy=0.8239 f1=0.2507 precision=0.6177 recall=0.1574 auc=0.8279 train_loss_0=0.2557]
+[2023-06-21 22:39:25] INFO Train time: 70.23803s. Valid time: 0.64962s. GPU RAM: 1.28/10.76 GB
+[2023-06-21 22:40:33] INFO Training: Epoch= 12 [train_loss_0=0.2556 is_clicked logloss=0.6931 accuracy=0.6375 f1=0.0000 precision=0.0000 recall=0.0000 auc=0.5000 train_loss_0=0.6931 is_installed logloss=0.3836 accuracy=0.8231 f1=0.2442 precision=0.6126 recall=0.1526 auc=0.8213 train_loss_0=0.2556]
+[2023-06-21 22:40:33] INFO Train time: 67.92366s. Valid time: 0.60829s. GPU RAM: 1.28/10.76 GB
+[2023-06-21 22:41:42] INFO Training: Epoch= 13 [train_loss_0=0.2554 is_clicked logloss=0.6931 accuracy=0.6375 f1=0.0000 precision=0.0000 recall=0.0000 auc=0.5000 train_loss_0=0.6931 is_installed logloss=0.3828 accuracy=0.8239 f1=0.2071 precision=0.6632 recall=0.1228 auc=0.8280 train_loss_0=0.2554]
+[2023-06-21 22:41:42] INFO Train time: 67.79344s. Valid time: 0.60374s. GPU RAM: 1.28/10.76 GB
+[2023-06-21 22:42:50] INFO Training: Epoch= 14 [train_loss_0=0.2553 is_clicked logloss=0.6931 accuracy=0.6375 f1=0.0000 precision=0.0000 recall=0.0000 auc=0.5000 train_loss_0=0.6931 is_installed logloss=0.3694 accuracy=0.8249 f1=0.3059 precision=0.5948 recall=0.2060 auc=0.8315 train_loss_0=0.2553]
+[2023-06-21 22:42:50] INFO Train time: 67.89714s. Valid time: 0.62450s. GPU RAM: 1.28/10.76 GB
+[2023-06-21 22:42:50] INFO logloss improved. Best value: 0.3694
+[2023-06-21 22:43:59] INFO Training: Epoch= 15 [train_loss_0=0.2552 is_clicked logloss=0.6931 accuracy=0.6375 f1=0.0000 precision=0.0000 recall=0.0000 auc=0.5000 train_loss_0=0.6931 is_installed logloss=0.3772 accuracy=0.8227 f1=0.2767 precision=0.5872 recall=0.1812 auc=0.8262 train_loss_0=0.2552]
+[2023-06-21 22:43:59] INFO Train time: 67.65309s. Valid time: 0.64645s. GPU RAM: 1.28/10.76 GB
+[2023-06-21 22:45:07] INFO Training: Epoch= 16 [train_loss_0=0.2550 is_clicked logloss=0.6931 accuracy=0.6375 f1=0.0000 precision=0.0000 recall=0.0000 auc=0.5000 train_loss_0=0.6931 is_installed logloss=0.3782 accuracy=0.8240 f1=0.2479 precision=0.6223 recall=0.1549 auc=0.8261 train_loss_0=0.2550]
+[2023-06-21 22:45:07] INFO Train time: 67.86077s. Valid time: 0.60109s. GPU RAM: 1.29/10.76 GB
+[2023-06-21 22:46:16] INFO Training: Epoch= 17 [train_loss_0=0.2550 is_clicked logloss=0.6931 accuracy=0.6375 f1=0.0000 precision=0.0000 recall=0.0000 auc=0.5000 train_loss_0=0.6931 is_installed logloss=0.3794 accuracy=0.8214 f1=0.2520 precision=0.5855 recall=0.1606 auc=0.8208 train_loss_0=0.2550]
+[2023-06-21 22:46:16] INFO Train time: 67.96579s. Valid time: 0.59835s. GPU RAM: 1.29/10.76 GB
+[2023-06-21 22:47:28] INFO Training: Epoch= 18 [train_loss_0=0.2548 is_clicked logloss=0.6931 accuracy=0.6375 f1=0.0000 precision=0.0000 recall=0.0000 auc=0.5000 train_loss_0=0.6931 is_installed logloss=0.3683 accuracy=0.8266 f1=0.3145 precision=0.6072 recall=0.2123 auc=0.8335 train_loss_0=0.2548]
+[2023-06-21 22:47:28] INFO Train time: 71.04410s. Valid time: 0.62582s. GPU RAM: 1.29/10.76 GB
+[2023-06-21 22:47:28] INFO logloss improved. Best value: 0.3683
+[2023-06-21 22:48:43] INFO Training: Epoch= 19 [train_loss_0=0.2548 is_clicked logloss=0.6931 accuracy=0.6375 f1=0.0000 precision=0.0000 recall=0.0000 auc=0.5000 train_loss_0=0.6931 is_installed logloss=0.3779 accuracy=0.8219 f1=0.2520 precision=0.5916 recall=0.1603 auc=0.8250 train_loss_0=0.2548]
+[2023-06-21 22:48:43] INFO Train time: 74.20482s. Valid time: 0.64877s. GPU RAM: 1.29/10.76 GB
+[2023-06-21 22:49:58] INFO Training: Epoch= 20 [train_loss_0=0.2548 is_clicked logloss=0.6931 accuracy=0.6375 f1=0.0000 precision=0.0000 recall=0.0000 auc=0.5000 train_loss_0=0.6931 is_installed logloss=0.3732 accuracy=0.8249 f1=0.3013 precision=0.5976 recall=0.2016 auc=0.8288 train_loss_0=0.2548]
+[2023-06-21 22:49:58] INFO Train time: 74.10201s. Valid time: 0.60829s. GPU RAM: 1.29/10.76 GB
+[2023-06-21 22:51:13] INFO Training: Epoch= 21 [train_loss_0=0.2546 is_clicked logloss=0.6931 accuracy=0.6375 f1=0.0000 precision=0.0000 recall=0.0000 auc=0.5000 train_loss_0=0.6931 is_installed logloss=0.3764 accuracy=0.8246 f1=0.2304 precision=0.6477 recall=0.1402 auc=0.8303 train_loss_0=0.2546]
+[2023-06-21 22:51:13] INFO Train time: 74.66219s. Valid time: 0.62447s. GPU RAM: 1.29/10.76 GB
+[2023-06-21 22:52:28] INFO Training: Epoch= 22 [train_loss_0=0.2545 is_clicked logloss=0.6931 accuracy=0.6375 f1=0.0000 precision=0.0000 recall=0.0000 auc=0.5000 train_loss_0=0.6931 is_installed logloss=0.3712 accuracy=0.8231 f1=0.2755 precision=0.5919 recall=0.1796 auc=0.8277 train_loss_0=0.2545]
+[2023-06-21 22:52:28] INFO Train time: 74.00375s. Valid time: 0.60644s. GPU RAM: 1.29/10.76 GB
+[2023-06-21 22:53:42] INFO Training: Epoch= 23 [train_loss_0=0.2544 is_clicked logloss=0.6931 accuracy=0.6375 f1=0.0000 precision=0.0000 recall=0.0000 auc=0.5000 train_loss_0=0.6931 is_installed logloss=0.3863 accuracy=0.8217 f1=0.2781 precision=0.5765 recall=0.1834 auc=0.8228 train_loss_0=0.2544]
+[2023-06-21 22:53:42] INFO Train time: 73.56337s. Valid time: 0.60620s. GPU RAM: 1.29/10.76 GB
+[2023-06-21 22:54:57] INFO Training: Epoch= 24 [train_loss_0=0.2544 is_clicked logloss=0.6931 accuracy=0.6375 f1=0.0000 precision=0.0000 recall=0.0000 auc=0.5000 train_loss_0=0.6931 is_installed logloss=0.3794 accuracy=0.8209 f1=0.2882 precision=0.5649 recall=0.1935 auc=0.8247 train_loss_0=0.2544]
+[2023-06-21 22:54:57] INFO Train time: 74.20359s. Valid time: 0.62774s. GPU RAM: 1.29/10.76 GB
+[2023-06-21 22:56:12] INFO Training: Epoch= 25 [train_loss_0=0.2542 is_clicked logloss=0.6931 accuracy=0.6375 f1=0.0000 precision=0.0000 recall=0.0000 auc=0.5000 train_loss_0=0.6931 is_installed logloss=0.3830 accuracy=0.8205 f1=0.2605 precision=0.5715 recall=0.1689 auc=0.8226 train_loss_0=0.2542]
+[2023-06-21 22:56:12] INFO Train time: 74.49434s. Valid time: 0.62172s. GPU RAM: 1.29/10.76 GB
+[2023-06-21 22:57:26] INFO Training: Epoch= 26 [train_loss_0=0.2542 is_clicked logloss=0.6931 accuracy=0.6375 f1=0.0000 precision=0.0000 recall=0.0000 auc=0.5000 train_loss_0=0.6931 is_installed logloss=0.3697 accuracy=0.8258 f1=0.3256 precision=0.5934 recall=0.2244 auc=0.8303 train_loss_0=0.2542]
+[2023-06-21 22:57:26] INFO Train time: 73.63664s. Valid time: 0.59612s. GPU RAM: 1.29/10.76 GB
+[2023-06-21 22:58:43] INFO Training: Epoch= 27 [train_loss_0=0.2542 is_clicked logloss=0.6931 accuracy=0.6375 f1=0.0000 precision=0.0000 recall=0.0000 auc=0.5000 train_loss_0=0.6931 is_installed logloss=0.3760 accuracy=0.8222 f1=0.3392 precision=0.5590 recall=0.2436 auc=0.8241 train_loss_0=0.2542]
+[2023-06-21 22:58:43] INFO Train time: 76.44570s. Valid time: 0.61555s. GPU RAM: 1.29/10.76 GB
+[2023-06-21 22:59:58] INFO Training: Epoch= 28 [train_loss_0=0.2540 is_clicked logloss=0.6931 accuracy=0.6375 f1=0.0000 precision=0.0000 recall=0.0000 auc=0.5000 train_loss_0=0.6931 is_installed logloss=0.3711 accuracy=0.8273 f1=0.3003 precision=0.6232 recall=0.1979 auc=0.8289 train_loss_0=0.2540]
+[2023-06-21 22:59:58] INFO Train time: 74.36002s. Valid time: 0.61192s. GPU RAM: 1.29/10.76 GB
+[2023-06-21 22:59:58] INFO Early stopped. Since the metric logloss haven't been improved for 10 epochs.
+[2023-06-21 22:59:58] INFO The best score of logloss is 0.3683 on epoch 18
+[2023-06-21 22:59:58] INFO Best model checkpoint saved in ./saved/PLESEnet/multi_with_weekday/2023-06-21-22-24-10.ckpt.
+[2023-06-21 23:00:25] INFO Predictions saved in ./predictions/PLESEnet/2023-06-21-22-59-58['is_clicked', 'is_installed'].csv
