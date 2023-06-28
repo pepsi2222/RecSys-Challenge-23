@@ -64,6 +64,8 @@ def run(model: str, dataset: str, without_val: bool, model_config: Dict=None, da
                 model_conf['data']['split_ratio'] = [3308553 + 177299, 0, 160973]
             elif '_536066' in dataset:
                 model_conf['data']['split_ratio'] = [3308553, 177299, 160973]
+            elif 'filtered' in dataset:
+                model_conf['data']['split_ratio'] = [2852886, 93357, 160973]
             else:
                 model_conf['data']['split_ratio'] = [3387880, 97972, 160973]
 
@@ -142,6 +144,14 @@ def pred(model: str, dataset: str, ckpt_name: str, model_config: Dict=None, data
             data_conf.update(data_config)
         else:
             raise TypeError(f"expecting `data_config` to be Dict, while get {type(data_config)} instead.")
+        
+        
+    if model_conf['data']['split_ratio'] is None:
+        if '_536066' in dataset:
+            model_conf['data']['split_ratio'] = [3308553, 177299, 160973]
+        else:
+            model_conf['data']['split_ratio'] = [3387880, 97972, 160973]
+                
 
     data_conf.update(model_conf['data'])    # update model-specified config
 
@@ -153,16 +163,23 @@ def pred(model: str, dataset: str, ckpt_name: str, model_config: Dict=None, data
     save_dir = os.path.join('./predictions', f'{model.__class__.__name__}')
     save_path = os.path.join(save_dir, ckpt_name.replace('.ckpt', '') + f'{str(model.frating)}.csv')
     
-    train_pred_df = model.predict(datasets[0], dataset='train')
-    train_pred_df.to_csv(save_path, sep='\t', index=False)
+    model.load_checkpoint(os.path.join(model.config['eval']['save_path'], model.ckpt_path))
+    model.config['train']['learning_rate'] = 0
+    model.fit(datasets[1], datasets[0], run_mode='light')
     
-    if len(datasets[1].data_index) > 0:
-        val_pred_df = model.predict(datasets[1], dataset='val')
-        val_pred_df.to_csv(save_path, sep='\t', index=False, mode='a', header=0)
+    # train_pred_df = model.predict(datasets[0], dataset='train')
+    # train_pred_df.to_csv(save_path, sep='\t', index=False)
     
-    test_pred_df = model.predict(datasets[-1], dataset='val')
-    test_pred_df.to_csv(save_path, sep='\t', index=False, mode='a', header=0)
+    # if len(datasets[1].data_index) > 0:
+    #     val_pred_df = model.predict(datasets[1], dataset='val')
+    #     val_pred_df.to_csv(save_path, sep='\t', index=False, mode='a', header=0)
+    
+    # test_pred_df = model.predict(datasets[-1], dataset='val')
+    # test_pred_df.to_csv(save_path, sep='\t', index=False, mode='a', header=0)
     # test_pred_df.to_csv(save_path.replace('.csv', '_tst.csv'), sep='\t', index=False)
+    
+    # tst_pred_df = model.predict(datasets[-1], dataset='test')
+    # tst_pred_df.to_csv(os.path.join(save_dir, ckpt_name.replace('.ckpt', '.csv')), sep='\t', index=False)
     
     logger.info(f'Predictions saved in {save_path}')
 

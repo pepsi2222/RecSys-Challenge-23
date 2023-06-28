@@ -2,7 +2,7 @@ model:
   num_levels: 2
   specific_experts_per_task: 4
   num_shared_experts: 3
-  expert_mlp_layer: [128, 128]
+  expert_mlp_layer: [256, 256]
   expert_activation: relu
   expert_dropout: 0.1
 

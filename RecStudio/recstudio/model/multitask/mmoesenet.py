@@ -46,7 +46,7 @@ class MMoESEnet(BaseRanker):
                             for r in self.frating
                         })
         self.senet = ctr.SqueezeExcitation(
-                        len(self.fields) - 1, 
+                        len(self.fields) - 2, 
                         model_config['reduction_ratio'], 
                         model_config['excitation_activation'])
             

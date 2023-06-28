@@ -1,0 +1,21 @@
+model:
+  embed_dim: 64
+  weights: [1.0, 20.0]
+
+  id_fields: ['f_6', 'f_15', 'f_4', 'f_18', 'f_61', 'f_62']
+  mlp_layer: [256, 256]
+  activation: relu
+  batch_norm: True
+  id_embed_dim: 8
+  dropout: 0.3
+
+  pp_hidden_dims1: [128, 128, 128]
+  gate_hidden_dims1: [128, 128, 128]
+  dropout1: 0.3
+
+  pp_hidden_dims2: [128, 128, 128]
+  gate_hidden_dims2: [128, 128, 128]
+  dropout2: 0.3
+
+train:
+  weight_decay: 1e-6

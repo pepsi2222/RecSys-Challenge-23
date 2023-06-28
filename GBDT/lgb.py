@@ -96,26 +96,29 @@ def color_dict_normal(dict_, keep=True,):
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--probs', type=str, default='install', choices=['install', 'all', 'none'])
+parser.add_argument('--probs', type=str, default='none', choices=['install', 'all', 'none'])
 parser.add_argument('--seed', type=int, default=2023)
 
-parser.add_argument('--train', type=bool, default=True)
+parser.add_argument('--train', type=bool, default=False)
+parser.add_argument('--train_with_val', type=bool, default=False)   # should motify num_boost_round
+nbr = 70
+
 parser.add_argument('--infer', type=bool, default=True)
-parser.add_argument('--infer_all', type=bool, default=False)
+parser.add_argument('--infer_all', type=bool, default=True)
 
 parser.add_argument('--weekday', type=bool, default=True)
 
 parser.add_argument('--md', type=int, default=-1)
-parser.add_argument('--nl', type=int, default=200)
+parser.add_argument('--nl', type=int, default=1000)
 parser.add_argument('--mb', type=int, default=100)
-parser.add_argument('--mcs', type=int, default=20)
-parser.add_argument('--l2', type=float, default=0)
-parser.add_argument('--l1', type=float, default=0)
-parser.add_argument('--ff', type=float, default=1.0)
-parser.add_argument('--bf', type=float, default=1.0)
-parser.add_argument('--bfq', type=int, default=5)
+parser.add_argument('--mcs', type=int, default=100)
+parser.add_argument('--l2', type=float, default=100)
+parser.add_argument('--l1', type=float, default=0.1)
+parser.add_argument('--ff', type=float, default=0.6)
+parser.add_argument('--bf', type=float, default=1)
+parser.add_argument('--bfq', type=int, default=100)
 
-parser.add_argument('--lr', type=float, default=0.005)
+parser.add_argument('--lr', type=float, default=0.1)
 
 args = parser.parse_args() 
 
@@ -137,8 +140,11 @@ params = {
     'bagging_freq': args.bfq,
     'learning_rate': args.lr,
     'device_type':'cpu',
-    'verbose': 1,
+    'verbose': -1,
+    'early_stopping_round': 200,
 }
+
+data_dir = '/root/autodl-tmp/xingmei/RecSysChallenge23/data'
 
 if args.train:
     log_time = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())
@@ -147,12 +153,11 @@ if args.train:
     logger.info(f'log saved in {log_path}')
     sys.stdout.write = logger.info
     logger.info(f"\n{set_color('Model Config', 'green')}: \n\n" + color_dict_normal(params, False))
-    logger.info('Loading csv')
     
 if args.probs == 'all' or args.probs == 'install':
-    cache_path = f'/root/autodl-tmp/xingmei/RecSys23/data/install_probs_trn_val_tst.cache'
+    cache_path = os.path.join(data_dir, 'install_probs_trn_val_tst.cache')
     if not os.path.exists(cache_path):
-        df = pd.read_csv(f'/root/autodl-tmp/xingmei/RecSys23/data/install_probs_trn_val_tst.csv', sep='\t')
+        df = pd.read_csv(os.path.join(data_dir, 'install_probs_trn_val_tst.csv'), sep='\t')
         with open(cache_path, 'wb') as f:
             pickle.dump(df, f)
             f.close()
@@ -162,9 +167,9 @@ if args.probs == 'all' or args.probs == 'install':
             f.close()
 
 if args.probs == 'all':
-    cache_path_ = f'/root/autodl-tmp/xingmei/RecSys23/data/click_probs_trn_val_tst.cache'
+    cache_path_ = os.path.join(data_dir, 'click_probs_trn_val_tst.cache')
     if not os.path.exists(cache_path_):
-        df_ = pd.read_csv(f'/root/autodl-tmp/xingmei/RecSys23/data/click_probs_trn_val_tst.csv', sep='\t')
+        df_ = pd.read_csv(os.path.join(data_dir, 'click_probs_trn_val_tst.csv'), sep='\t')
         with open(cache_path_, 'wb') as f:
             pickle.dump(df, f)
             f.close()
@@ -174,11 +179,11 @@ if args.probs == 'all':
             f.close()
             
 if args.probs == 'none':
-    cache_path = '/root/autodl-tmp/xingmei/RecSys23/data/preprocessed_trn_val_tst.cache'
-    path = '/root/autodl-tmp/xingmei/RecSys23/data/preprocessed_trn_val_tst.csv'
+    cache_path = os.path.join(data_dir, 'preprocessed_trn_val_tst.cache')
+    path = os.path.join(data_dir, 'preprocessed_trn_val_tst.csv')
     if args.weekday:
-        cache_path = f'/root/autodl-tmp/xingmei/RecSys23/data/preprocessed_trn_val_tst_weekday.cache'
-        path = '/root/autodl-tmp/xingmei/RecSys23/data/preprocessed_trn_val_tst_with_weekday.csv'
+        cache_path = os.path.join(data_dir, 'preprocessed_trn_val_tst_weekday.cache')
+        path = os.path.join(data_dir, 'preprocessed_trn_val_tst_with_weekday.csv')
     if not os.path.exists(cache_path):
         df = pd.read_csv(path, sep='\t')
         with open(cache_path, 'wb') as f:
@@ -208,29 +213,40 @@ if args.probs == 'all' or args.probs == 'install':
 
 
 if args.train:
-    trn_df = df[0:3387880]
-    val_df = df[3387880:3387880+97972]
-    trn_X, trn_y = trn_df[feats], trn_df['is_installed']
-    val_X, val_y = val_df[feats], val_df['is_installed']
-    trn_d = lgb.Dataset(trn_X, trn_y, feature_name=list(trn_X.columns))
-    val_d = lgb.Dataset(val_X, val_y, reference=trn_d, feature_name=list(trn_X.columns))
-    model = lgb.train(
-                params, 
-                trn_d, 
-                valid_sets=[val_d],
-                num_boost_round=10000,
-                early_stopping_round=200,
-                feature_name=list(trn_X.columns))
-    logger.info(f"Best score: {model.best_score['valid_0']['binary_logloss']} | Log time {log_time}")
+    if not args.train_with_val:
+        trn_df = df[0:3387880]
+        val_df = df[3387880:3387880+97972]
+        trn_X, trn_y = trn_df[feats], trn_df['is_installed']
+        val_X, val_y = val_df[feats], val_df['is_installed']
+        trn_d = lgb.Dataset(trn_X, trn_y, feature_name=list(trn_X.columns))
+        val_d = lgb.Dataset(val_X, val_y, reference=trn_d, feature_name=list(trn_X.columns))
+        model = lgb.train(
+                    params, 
+                    trn_d, 
+                    valid_sets=[val_d],
+                    num_boost_round=10000,
+                    feature_name=list(trn_X.columns))
+    else:
+        trn_df = df[:3387880+97972]
+        trn_X, trn_y = trn_df[feats], trn_df['is_installed']
+        trn_d = lgb.Dataset(trn_X, trn_y, feature_name=list(trn_X.columns))
+        model = lgb.train(
+                    params, 
+                    trn_d, 
+                    valid_sets=[trn_d],
+                    num_boost_round=nbr,
+                    feature_name=list(trn_X.columns))
+        
     if not os.path.exists("./saved/LightGBM"):
         os.makedirs("./saved/LightGBM")
     model.save_model(f"./saved/LightGBM/{log_time}.json")
+    logger.info(f"Best score: {model.best_score['valid_0']['binary_logloss']} | Log time {log_time} | Iteration {model.best_iteration}")
     
 if args.infer:
     if args.train:
         save_time = log_time
     else:
-        save_time = ''
+        save_time = '2023-06-20-15-52-22'
         model = lgb.Booster(model_file="./saved/LightGBM/"+save_time+".json")
         
     if not os.path.exists("./predictions/LightGBM"):
@@ -239,7 +255,7 @@ if args.infer:
     if not args.infer_all:
         tst_X = df.loc[3387880+97972:, feats]
         preds = model.predict(tst_X)
-        rowid = pd.read_csv('/root/autodl-tmp/yankai/data/data/tst_rowid.csv')['f_0'].to_list()
+        rowid = pd.read_csv('/root/autodl-tmp/xingmei/RecSysChallenge23/data/tst_rowid.csv')['f_0'].to_list()
         pred_df = pd.DataFrame({
                             'RowId': rowid, 
                             'is_clicked': 0, 

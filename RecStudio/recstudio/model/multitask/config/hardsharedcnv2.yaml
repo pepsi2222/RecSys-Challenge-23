@@ -1,0 +1,13 @@
+model:
+  top_mlp_layer: [128, 128]
+  top_activation: relu
+  top_dropout: 0
+  top_batch_norm: False
+  
+  num_layers: 4
+
+  embed_dim: 64
+  weights: [1.0, 20.0]
+
+train:
+  weight_decay: 1e-6

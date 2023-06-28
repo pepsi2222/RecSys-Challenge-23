@@ -1,7 +1,6 @@
 raw_data/
 *.csv
 events.out.tfevents.*
-*.ckpt
 cache/
 
 # Byte-compiled / optimized / DLL files
@@ -143,7 +142,8 @@ tensorboard/
 .vscode/
 nni-experiments/
 
-**/saved
+# **/saved
+# *.ckpt
 **/.recstudio
 datasets/*
 !datasets/ml-100k/
@@ -151,8 +151,10 @@ datasets/*
 .recstudio/
 catboost_info/
 *.cache
-predictions/
-predictions0/
-predictions1401/
-predictionsA100/
+# predictions/
+# predictions0/
+# predictions1401/
+# predictionsA100/
 log0/
+# *.log
+*.json
