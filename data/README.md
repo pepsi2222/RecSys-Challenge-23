@@ -78,3 +78,7 @@ RowId\tis_clicked\tis_installed
 ...\t...\t...
 
 ...
+
+# Add weekday as a feature
+
+all end with _with_weekday.csv
