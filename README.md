@@ -8,29 +8,14 @@ run `analyze/process.ipynb`, `data/split_sample.ipynb` and `feature_engineer/wee
 
 fix url in `RecStudio/recstudio/data/config/*.yaml`
 
+## Download checkpoint
+
+download [DCNv2](https://rec.ustc.edu.cn/share/29c312c0-164f-11ee-b203-1772a27481ac) and save *.ckpt in saved/DCNv2/
+
+
 ## Predict
 
-~~~
-python RecStudio/run.py -m=DCNv2 -c=./saved/DCNv2/2023-06-21-00-28-24.ckpt
-~~~
-
-~~~
-python RecStudio/run.py -m=HardShareSEnet -c=./saved/HardShareSEnet/2023-06-21-22-59-11.ckpt
-~~~
-
-~~~
-python RecStudio/run.py -m=PLE -c=./saved/PLE/2023-06-19-11-52-21.ckpt -d=multi
-~~~
-
-~~~
-python RecStudio/run.py -m=PLEMLPSEnet -c=./saved/PLEMLPSEnet/2023-06-21-22-32-26.ckpt
-~~~
-
-~~~
-python RecStudio/run.py -m=PLESEnet -c=./saved/PLESEnet/2023-06-21-22-24-10.ckpt
-~~~
-
-Then, concat them and run `ensemble.ipynb` to generate the final prediction.
+run `predict.sh` to generate the final prediction.
 
 ## Try more
 
