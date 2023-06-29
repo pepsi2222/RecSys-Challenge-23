@@ -1,10 +1,10 @@
 model:
+  embed_dim: 70
   combination: stacked
   low_rank: ~
   num_experts: 3
   num_layers: 4
-  embed_dim: 70
-  mlp_layer: [256,256,256]
+  mlp_layer: [256, 256, 256]
   activation: relu
   cross_activation: tanh
   dropout: 0.1

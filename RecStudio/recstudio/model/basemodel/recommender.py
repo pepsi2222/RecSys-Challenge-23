@@ -348,7 +348,7 @@ class Recommender(torch.nn.Module, abc.ABC):
 
     def predict_epoch_end(self, outputs, dataset='test'):
         if dataset == 'test':
-            rowid = pd.read_csv("/root/autodl-tmp/yankai/data/data/tst_rowid.csv")['f_0'].to_list()
+            rowid = pd.read_csv("./data/tst_rowid.csv")['f_0'].to_list()
             if not isinstance(self.frating, list):
                 if self.frating == 'is_installed':
                     pred_df = pd.DataFrame({

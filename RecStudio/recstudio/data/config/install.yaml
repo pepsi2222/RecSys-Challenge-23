@@ -39,7 +39,7 @@ network_feat_header: ~
 # Normalizer()
 # KernelCenterer()
 # QuantileTransformer(), PolynomialFeatures(), SplineTransformer()
-# Customized: LogTransformer(), or use FunctionTransformer(...)
+# Customized: FunctionTransformer(...)
 
 # p = StandardScaler()
 # p = MinMaxScaler()

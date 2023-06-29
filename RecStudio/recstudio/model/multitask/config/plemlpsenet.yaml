@@ -1,4 +1,6 @@
 model:
+  embed_dim: 40
+
   num_levels: 2
   specific_experts_per_task: 4
   num_shared_experts: 3
@@ -23,10 +25,6 @@ model:
   reduction_ratio: 3
   excitation_activation: relu
 
-  embed_dim: 40
-
-  weights: [1.0, 20.0]
-
-
 train:
-  weight_decay: 1e-6
+  weights: [1.0, 20.0]
+  weight_decay: 1e-5

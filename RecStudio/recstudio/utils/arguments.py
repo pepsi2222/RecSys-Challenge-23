@@ -61,53 +61,28 @@ def dict2arguments(config: Dict, parser: ArgumentParser) -> ArgumentParser:
     return parser
 
 
-def get_default_parser(task, with_weekday, fine_tune, model, val536066, filtered, log1p) -> ArgumentParser:
-    if 'hardshare' in model.lower() or \
-        'mmoe' in model.lower() or \
-        'ple' in model.lower() or \
-        'aitm' in model.lower():
-        task = 'multi'
-        
-    if fine_tune == True:
-        ft = '_finetune'
-    else:
-        ft = ''
-    
-    if with_weekday == True:
-        ww = '_with_weekday'
-    else:
-        ww = ''
-        
-    if val536066 == True:
-        v = '_536066'
-    else:
-        v = ''
-
-    if filtered:
-        f = 'filtered_'
-    else:
-        f = ''
-        
-    if log1p:
-        dataset = task + '_log1p'
-    else:
-        dataset = f + task + ft + ww + v
+def get_default_parser() -> ArgumentParser:
     
     parser = ArgumentParser(
         prog='RecStudio',
         description="RecStudio Argparser",
         argument_default=SUPPRESS,
         formatter_class=ArgumentDefaultsHelpFormatter)
-    # parser.add_argument('--finetune', '-ft', type=bool, default=False, action='store_true')
-    # parser.add_argument('--withweekday', '-ww', type=bool, default=False, action='store_true')
-    # parser.add_argument('--task', '-t', type=str, default='install')
     
     group = parser.add_argument_group('main')
-    group.add_argument('--model', '-m', type=str, default=model, help='model name')
+    group.add_argument('--model', '-m', type=str, default='DCNv2', help='model name')
+    
+    args, _ = parser.parse_known_args()
+    if 'hardshare' in args.model.lower() or 'mmoe' in args.model.lower() or \
+        'ple' in args.model.lower() or 'aitm' in args.model.lower():
+        dataset = 'multi_with_weekday'
+    else:
+        dataset = 'install_with_weekday'
+        
     group.add_argument('--dataset', '-d', type=str, default=dataset, help='dataset name')
+    group.add_argument('--ckpt_path', '-c', type=str, default=None, help='path of checkpoint')
     group.add_argument('--data_config_path', type=str, default=None, help='path of datasets config file')
-    group.add_argument('--mode', choices=['tune', 'light', 'detail'],
-                        default='light', help='flag indiates model tuning')
+    group.add_argument('--mode', choices=['tune', 'light', 'detail'], default='light', help='flag indiates model tuning')
     return parser
 
 

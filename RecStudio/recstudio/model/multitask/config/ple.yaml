@@ -1,4 +1,6 @@
 model:
+  embed_dim: 64
+
   num_levels: 2
   specific_experts_per_task: 4
   num_shared_experts: 3
@@ -16,4 +18,5 @@ model:
   tower_batch_norm: False
 
 train:
+  weights: [1.0, 20.0]
   weight_decay: 1e-5

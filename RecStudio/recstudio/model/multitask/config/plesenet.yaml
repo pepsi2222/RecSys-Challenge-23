@@ -1,10 +1,12 @@
 model:
+  embed_dim: 40
+
   num_levels: 2
   specific_experts_per_task: 4
   num_shared_experts: 3
   expert_mlp_layer: [256, 256]
   expert_activation: relu
-  expert_dropout: 0.1
+  expert_dropout: 0.5
 
   gate_mlp_layer: [128, ]
   gate_activation: relu
@@ -18,9 +20,6 @@ model:
   reduction_ratio: 3
   excitation_activation: relu
 
-  embed_dim: 40
-
-  weights: [1.0, 20.0]
-
 train:
+  weights: [1.0, 20.0]
   weight_decay: 1e-5

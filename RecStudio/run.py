@@ -1,37 +1,16 @@
 from recstudio.utils import *
 from recstudio import quickstart
-import os
 
-task = 'install'
-with_weekday = True
-val536066 = False
-fine_tune = False
-without_val = False
-filtered = False
-log1p = True
-model = 'PPNet'
-
-# only work when without_val
-early_stop_delta = 0.005
-early_stop_patience = 5
-
-# ckpt_name = '2023-06-21-22-32-26.ckpt'
-ckpt_name = '2023-06-22-20-07-42.ckpt'
 
 if __name__ == '__main__':
-    parser = get_default_parser(task, with_weekday, fine_tune, model, val536066, filtered, log1p)
+    parser = get_default_parser()
     args, command_line_args = parser.parse_known_args()
     parser = add_model_arguments(parser, args.model)
     command_line_conf = parser2nested_dict(parser, command_line_args)
 
     model_class, model_conf = get_model(args.model)
     model_conf = deep_update(model_conf, command_line_conf)
-    # if os.getcwd().endswith('RecStudio'):
-    #     sh = 'yaml_adjust.sh'
-    # else:
-    #     sh = 'RecStudio/yaml_adjust.sh'
-    # os.system(f"bash {sh} {model_class.__name__ in ['HardShare', 'MMoE', 'PLE', 'AITM']} {task} START {fine_tune}")
-    quickstart.run(args.model, args.dataset, without_val, model_config=model_conf, data_config_path=args.data_config_path, 
-                   early_stop_delta=early_stop_delta, early_stop_patience=early_stop_patience)
-    # quickstart.pred(args.model, args.dataset, ckpt_name, model_config=model_conf, data_config_path=args.data_config_path)
-    # os.system(f"bash {sh} {model_class.__name__ in ['HardShare', 'MMoE', 'PLE', 'AITM']} {task} END {fine_tune}")
+    if args.ckpt_path is not None:
+        quickstart.run(args.model, args.dataset, model_config=model_conf, data_config_path=args.data_config_path)
+    else:
+        quickstart.pred(args.model, args.dataset, args.ckpt_path, model_config=model_conf, data_config_path=args.data_config_path)

@@ -59,7 +59,6 @@ model:
 	bottom_batch_norm=False
 	reduction_ratio=3
 	excitation_activation=relu
-	weights=[1.0, 20.0]
 train:
 	accelerator=gpu
 	ann=None
