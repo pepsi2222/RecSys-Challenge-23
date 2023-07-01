@@ -1,5 +1,7 @@
 # RecSys Challenge 23
 
+Final prediction is ensembled by only 5 models, which are `DCNv2`, `HardShareSEnet`, `PLE`, `PLEMLPSEnet`, `PLESEnet` respectively.
+
 ## Data
 
 run `analyze/process.ipynb`, `data/split_sample.ipynb` and `feature_engineer/weekday.ipynb` to generate *.csv
@@ -11,7 +13,7 @@ fix url in `RecStudio/recstudio/data/config/*.yaml`
 ## Download checkpoint
 
 download [DCNv2](https://rec.ustc.edu.cn/share/29c312c0-164f-11ee-b203-1772a27481ac) and save *.ckpt in saved/DCNv2/
-
+other checkpoints have already been kept in saved/
 
 ## Predict
 
